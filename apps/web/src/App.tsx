@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Bookmark, Check, CircleHelp, ExternalLink, FileText, Landmark, Menu, Search, ShieldCheck, Sparkles, Vote, X, LogOut } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Bookmark, Check, CircleHelp, ExternalLink, FileText, Landmark, Menu, Moon, Search, ShieldCheck, Sparkles, Sun, Vote, X, LogOut } from "lucide-react";
 import type { Representative } from "@janpratinidhi/shared";
 
 type Profile = Representative;
@@ -35,6 +35,10 @@ function App() {
   const representativeMatch = window.location.pathname.match(/^\/representatives\/([^/]+)\/?$/);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profileTotal, setProfileTotal] = useState(0);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    try { return localStorage.getItem("janpratinidhi-theme") === "dark" ? "dark" : "light"; }
+    catch { return "light"; }
+  });
   const [user, setUser] = useState<User | null>(() => { try { const saved = sessionStorage.getItem("janpratinidhi-user"); return saved ? JSON.parse(saved) as User : null; } catch { return null; } });
   const [pendingProfile, setPendingProfile] = useState<User | null>(null);
   const [profileBusy, setProfileBusy] = useState(false);
@@ -50,6 +54,13 @@ function App() {
   const [saved, setSaved] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#141715" : "#f6f5f1");
+    try { localStorage.setItem("janpratinidhi-theme", theme); } catch { /* Theme still works for this session. */ }
+  }, [theme]);
+  const toggleTheme = () => setTheme((current) => current === "dark" ? "light" : "dark");
 
   useEffect(() => {
     let active = true;
@@ -171,22 +182,22 @@ function App() {
     window.setTimeout(() => setNotice(""), 2200);
   };
 
-  if (isAdminRoute) return <div className="admin-route-shell"><header className="admin-route-header"><a className="brand" href="/" aria-label="Janpratinidhi home"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span> <small>ADMIN</small></span></a><a className="admin-return-link" href="/">View public website <ArrowUpRight size={14} /></a></header>{adminAuthenticated ? adminOpen ? <AdminPanel users={adminUsers} stats={adminStats} representatives={adminRepresentatives} loading={adminLoading} onRefresh={openAdmin} onNotice={setNotice} onClose={() => window.location.assign("/")} onSignOut={adminSignOut} onStatusChange={setAccountStatus} onDeleteUser={deleteAccount} /> : <div className="admin-route-loading">Loading admin dashboard…</div> : <div className="admin-route-login"><div className="admin-route-intro"><span className="admin-login-icon"><ShieldCheck size={23} /></span><div className="eyebrow small-eyebrow">JANPRATINIDHI ADMIN</div><h1>Manage your public directory.</h1><p>Sign in with your administrator credentials to manage representative records and review user accounts.</p><a href="/" className="admin-return-link">← Return to public website</a></div><AdminLoginForm busy={adminBusy} onSubmit={signInAdmin} /></div>}{notice && <div className="toast"><Check size={16} />{notice}<button onClick={() => setNotice("")} aria-label="Dismiss"><X size={15} /></button></div>}</div>;
-  if (isPoliticianRoute) return <PublicPoliticianPage />;
-  if (representativeMatch) return <RepresentativeDetailsPage identifier={decodeURIComponent(representativeMatch[1])} />;
-  if (isDashboardRoute) return user ? <UserDashboardPage user={user} onSignOut={signOut} /> : <DashboardLoginGate />;
+  if (isAdminRoute) return <div className="admin-route-shell"><header className="admin-route-header"><a className="brand" href="/" aria-label="Janpratinidhi home"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span> <small>ADMIN</small></span></a><div className="theme-header-actions"><ThemeToggle theme={theme} onToggle={toggleTheme} /><a className="admin-return-link" href="/">View public website <ArrowUpRight size={14} /></a></div></header>{adminAuthenticated ? adminOpen ? <AdminPanel users={adminUsers} stats={adminStats} representatives={adminRepresentatives} loading={adminLoading} onRefresh={openAdmin} onNotice={setNotice} onClose={() => window.location.assign("/")} onSignOut={adminSignOut} onStatusChange={setAccountStatus} onDeleteUser={deleteAccount} /> : <div className="admin-route-loading">Loading admin dashboard…</div> : <div className="admin-route-login"><div className="admin-route-intro"><span className="admin-login-icon"><ShieldCheck size={23} /></span><div className="eyebrow small-eyebrow">JANPRATINIDHI ADMIN</div><h1>Manage your public directory.</h1><p>Sign in with your administrator credentials to manage representative records and review user accounts.</p><a href="/" className="admin-return-link">← Return to public website</a></div><AdminLoginForm busy={adminBusy} onSubmit={signInAdmin} /></div>}{notice && <div className="toast"><Check size={16} />{notice}<button onClick={() => setNotice("")} aria-label="Dismiss"><X size={15} /></button></div>}</div>;
+  if (isPoliticianRoute) return <PublicPoliticianPage theme={theme} onToggleTheme={toggleTheme} />;
+  if (representativeMatch) return <RepresentativeDetailsPage identifier={decodeURIComponent(representativeMatch[1])} theme={theme} onToggleTheme={toggleTheme} />;
+  if (isDashboardRoute) return user ? <UserDashboardPage user={user} onSignOut={signOut} theme={theme} onToggleTheme={toggleTheme} /> : <DashboardLoginGate theme={theme} onToggleTheme={toggleTheme} />;
 
   return <div className="site-shell">
-    <div className="topline"><span><span className="live-dot" /> Public records, made easier to explore</span><span className="topline-right">Independent · Open source · Built for everyone <ArrowUpRight size={13} /></span></div>
-    <header className="header">
-      <a className="brand" href="#home" aria-label="Janpratinidhi home"><span className="brand-mark"><Landmark size={20} strokeWidth={2.2} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a>
+     <header className="header">
+      <a className="brand" href="#home" aria-label="Janpratinidhi home"><span className="brand-mark"><Landmark size={20} strokeWidth={2.2} /></span><span className="brand-name">Jan Pratinidhi<span>.</span></span></a>
       <button className="mobile-menu icon-button" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation">{mobileNav ? <X /> : <Menu />}</button>
       <nav className={mobileNav ? "nav-links open" : "nav-links"}>
         <a className="active" href="/politician">Explore people</a><a href="#how">How it works</a><a href="#about">About the project</a>
       </nav>
-      <a className="login-button admin-header-button" href="/admin/dashboard">Admin <Landmark size={14} /></a>
+      {/* <a className="login-button admin-header-button" href="/admin/dashboard">Admin <Landmark size={14} /></a> */}
       {user && <a className="login-button dashboard-header-button" href="/dashboard">Dashboard <ArrowRight size={14} /></a>}
-      {user ? <button className="login-button user-button" onClick={signOut} title={`Signed in as ${user.email}`}>{user.picture && <img src={user.picture} alt="" />}<span>{user.name.split(" ")[0]}</span><LogOut size={14} /></button> : <button className="login-button" onClick={signIn} disabled={authBusy}>{authBusy ? "Signing in…" : "Sign in with Google"} <ArrowRight size={15} /></button>}
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      {user ? <button className="login-button user-button" onClick={signOut} title={`Signed in as ${user.email}`}>{user.picture && <img src={user.picture} alt="" />}<span>{user.name.split(" ")[0]}</span><LogOut size={14} /></button> : <button className="login-button" onClick={signIn} disabled={authBusy}>{authBusy ? "Signing in…" : "Sign In"} <ArrowRight size={15} /></button>}
     </header>
 
     <main>
@@ -243,7 +254,14 @@ function App() {
   </div>;
 }
 
-function PublicPoliticianPage() {
+function ThemeToggle({ theme, onToggle }: { theme: "light" | "dark"; onToggle: () => void }) {
+  const nextTheme = theme === "dark" ? "light" : "dark";
+  return <button className="theme-toggle" type="button" onClick={onToggle} aria-label={`Switch to ${nextTheme} mode`} aria-pressed={theme === "dark"} title={`Switch to ${nextTheme} mode`}>
+    {theme === "dark" ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+  </button>;
+}
+
+function PublicPoliticianPage({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme: () => void }) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [type, setType] = useState("ALL");
@@ -297,7 +315,7 @@ function PublicPoliticianPage() {
   const clearFilters = () => { setQuery(""); setDebouncedQuery(""); setType("ALL"); setState(""); setParty(""); setPage(1); };
 
   return <div className="dashboard-shell public-politician-shell">
-    <header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><a className="dashboard-back-link" href="/">← Home</a></header>
+    <header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="theme-header-actions"><ThemeToggle theme={theme} onToggle={onToggleTheme} /><a className="dashboard-back-link" href="/">← Home</a></div></header>
     <main className="dashboard-main">
       <div className="dashboard-breadcrumb"><a href="/">Home</a><span>/</span><b>Explore politicians</b></div>
       <div className="dashboard-title"><div><div className="eyebrow small-eyebrow">PUBLIC DIRECTORY <span className="heading-rule" /></div><h1>Explore politicians</h1><p>Search MPs and MLAs by name, constituency, state, or party.</p></div><span className="dashboard-total">{total.toLocaleString("en-IN")} records</span></div>
@@ -312,11 +330,11 @@ function PublicPoliticianPage() {
   </div>;
 }
 
-function DashboardLoginGate() {
-  return <div className="dashboard-login-gate"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div><ShieldCheck size={30} /><h1>Sign in to your dashboard</h1><p>Use your Google account to search the representative directory.</p><a className="primary-button" href="/">Go to sign in <ArrowRight size={15} /></a></div></div>;
+function DashboardLoginGate({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme: () => void }) {
+  return <div className="dashboard-login-gate"><div className="login-gate-header"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><ThemeToggle theme={theme} onToggle={onToggleTheme} /></div><div><ShieldCheck size={30} /><h1>Sign in to your dashboard</h1><p>Use your Google account to search the representative directory.</p><a className="primary-button" href="/">Go to sign in <ArrowRight size={15} /></a></div></div>;
 }
 
-function UserDashboardPage({ user, onSignOut }: { user: User; onSignOut: () => void }) {
+function UserDashboardPage({ user, onSignOut, theme, onToggleTheme }: { user: User; onSignOut: () => void; theme: "light" | "dark"; onToggleTheme: () => void }) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [type, setType] = useState("ALL");
@@ -367,7 +385,7 @@ function UserDashboardPage({ user, onSignOut }: { user: User; onSignOut: () => v
   }, [debouncedQuery, type, state, party, page, reload]);
 
   const resetPage = (setter: (value: string) => void) => (value: string) => { setter(value); setPage(1); };
-  return <div className="dashboard-shell"><header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="dashboard-user"><span className="dashboard-user-name">{user.firstName ?? user.name}</span>{user.picture && <img src={user.picture} alt="" />}<button onClick={onSignOut}>Sign out</button></div></header>
+  return <div className="dashboard-shell"><header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="dashboard-header-actions"><ThemeToggle theme={theme} onToggle={onToggleTheme} /><div className="dashboard-user"><span className="dashboard-user-name">{user.firstName ?? user.name}</span>{user.picture && <img src={user.picture} alt="" />}<button onClick={onSignOut}>Sign out</button></div></div></header>
     <main className="dashboard-main"><div className="dashboard-breadcrumb"><a href="/">Home</a><span>/</span><b>Dashboard</b></div><div className="dashboard-title"><div><div className="eyebrow small-eyebrow">YOUR DASHBOARD <span className="heading-rule" /></div><h1>Find Your MP / MLA</h1><p>Search published, source-linked representative records by name, place, or party.</p></div><span className="dashboard-total">{total.toLocaleString("en-IN")} {total === 1 ? "record" : "records"}</span></div>
       <form className="representative-search-form" onSubmit={(event) => { event.preventDefault(); setDebouncedQuery(query.trim()); setPage(1); }}><div className="dashboard-search-box"><Search size={19} aria-hidden="true" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Search by name, constituency, state or party" aria-label="Search representatives by name, constituency, state or party" /><button type="submit" aria-label="Search representatives"><Search size={17} /><span>Search</span></button></div><div className="dashboard-filters"><label>Type<select value={type} onChange={(event) => resetPage(setType)(event.target.value)}><option value="ALL">All</option><option value="MP">MP</option><option value="MLA">MLA</option></select></label><label>State<select value={state} onChange={(event) => resetPage(setState)(event.target.value)}><option value="">All states</option>{filters.states.map((item) => <option key={item} value={item}>{item}</option>)}</select></label><label>Party<select value={party} onChange={(event) => resetPage(setParty)(event.target.value)}><option value="">All parties</option>{filters.parties.map((item) => <option key={item} value={item}>{item}</option>)}</select></label></div></form>
       <div className="results-heading"><div><h2>Representatives</h2><p>Showing up to 10 verified database records per page.</p></div><span>Page {totalPages ? page : 0} of {totalPages}</span></div>
@@ -401,7 +419,7 @@ function RepresentativeAvatar({ person, tone = "tone-peach", showSpark = false }
   </span>;
 }
 
-function RepresentativeDetailsPage({ identifier }: { identifier: string }) {
+function RepresentativeDetailsPage({ identifier, theme, onToggleTheme }: { identifier: string; theme: "light" | "dark"; onToggleTheme: () => void }) {
   const [person, setPerson] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -415,7 +433,7 @@ function RepresentativeDetailsPage({ identifier }: { identifier: string }) {
     return () => { active = false; };
   }, [identifier]);
   const house = person?.house || (person?.office === "Lok Sabha MP" ? "Lok Sabha" : person?.office === "Rajya Sabha MP" ? "Rajya Sabha" : person?.office === "MLA" ? "Vidhan Sabha" : "");
-  return <div className="dashboard-shell profile-route-shell"><header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><a className="dashboard-back-link" href="/politician">← Back to politicians</a></header><main className="representative-detail-main">{loading ? <div className="directory-state" role="status"><span className="loading-spinner" />Loading representative record…</div> : error || !person ? <div className="directory-state error-state" role="alert"><h1>Record unavailable</h1><p>{error || "This representative is not in the published directory."}</p><a href="/politician" className="primary-button">Return to politicians <ArrowRight size={15} /></a></div> : <><a className="dashboard-back-link detail-back" href="/politician">← Back to politicians</a><section className="representative-profile-hero"><RepresentativePhoto url={person.photoUrl} initials={person.initials} name={person.name} /><div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p>{person.party}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div></section><div className="representative-detail-grid"><section className="representative-detail-card"><h2>Representative details</h2><dl className="detail-facts">{person.state && <div><dt>State</dt><dd>{person.state}</dd></div>}{person.constituency && <div><dt>Constituency</dt><dd>{person.constituency}</dd></div>}{house && <div><dt>House</dt><dd>{house}</dd></div>}{(person.termStart || person.termEnd || person.since) && <div><dt>Term</dt><dd>{person.termStart || person.since || ""}{person.termEnd ? ` – ${person.termEnd}` : person.termStart || person.since ? " – Present" : ""}</dd></div>}{person.electionYear && <div><dt>Election year</dt><dd>{person.electionYear}</dd></div>}{person.education && <div><dt>Education</dt><dd>{person.education}</dd></div>}</dl>{(person.description || person.summary) && <div className="profile-description"><h3>Biography</h3><p>{person.description || person.summary}</p></div>}</section><div className="representative-record-column">{person.elections.length > 0 && <section className="representative-detail-card"><h2>Election information</h2>{person.elections.map((election, index) => <article className="detail-election-row" key={`${election.year}-${index}`}><div><b>{election.year} · {election.electionType}</b><p>{election.constituency}, {election.state}</p><small>{election.party} · {election.result} · {election.votes.toLocaleString("en-IN")} votes{election.margin ? ` · margin ${election.margin.toLocaleString("en-IN")}` : ""}</small></div>{election.source?.url && <a href={election.source.url} target="_blank" rel="noreferrer" aria-label={`Open source for ${election.year} election`}><ExternalLink size={15} /></a>}</article>)}</section>}{person.sources.length > 0 && <section className="representative-detail-card"><h2>Verified sources</h2>{person.sources.map((source, index) => <a className="detail-source-link" key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer"><FileText size={16} /><span><b>{source.title}</b><small>{source.publisher}{source.accessedAt ? ` · checked ${source.accessedAt}` : ""}</small></span><ExternalLink size={14} /></a>)}</section>}{person.recordData && Object.keys(person.recordData).length > 0 && <section className="representative-detail-card"><h2>Additional public records</h2><dl className="detail-facts">{Object.entries(person.recordData).map(([key, value]) => <div key={key}><dt>{key.replace(/([A-Z])/g, " $1")}</dt><dd>{typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)}</dd></div>)}</dl></section>}</div></div></>}</main></div>;
+  return <div className="dashboard-shell profile-route-shell"><header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="theme-header-actions"><ThemeToggle theme={theme} onToggle={onToggleTheme} /><a className="dashboard-back-link" href="/politician">← Back to politicians</a></div></header><main className="representative-detail-main">{loading ? <div className="directory-state" role="status"><span className="loading-spinner" />Loading representative record…</div> : error || !person ? <div className="directory-state error-state" role="alert"><h1>Record unavailable</h1><p>{error || "This representative is not in the published directory."}</p><a href="/politician" className="primary-button">Return to politicians <ArrowRight size={15} /></a></div> : <><a className="dashboard-back-link detail-back" href="/politician">← Back to politicians</a><section className="representative-profile-hero"><RepresentativePhoto url={person.photoUrl} initials={person.initials} name={person.name} /><div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p>{person.party}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div></section><div className="representative-detail-grid"><section className="representative-detail-card"><h2>Representative details</h2><dl className="detail-facts">{person.state && <div><dt>State</dt><dd>{person.state}</dd></div>}{person.constituency && <div><dt>Constituency</dt><dd>{person.constituency}</dd></div>}{house && <div><dt>House</dt><dd>{house}</dd></div>}{(person.termStart || person.termEnd || person.since) && <div><dt>Term</dt><dd>{person.termStart || person.since || ""}{person.termEnd ? ` – ${person.termEnd}` : person.termStart || person.since ? " – Present" : ""}</dd></div>}{person.electionYear && <div><dt>Election year</dt><dd>{person.electionYear}</dd></div>}{person.education && <div><dt>Education</dt><dd>{person.education}</dd></div>}</dl>{(person.description || person.summary) && <div className="profile-description"><h3>Biography</h3><p>{person.description || person.summary}</p></div>}</section><div className="representative-record-column">{person.elections.length > 0 && <section className="representative-detail-card"><h2>Election information</h2>{person.elections.map((election, index) => <article className="detail-election-row" key={`${election.year}-${index}`}><div><b>{election.year} · {election.electionType}</b><p>{election.constituency}, {election.state}</p><small>{election.party} · {election.result} · {election.votes.toLocaleString("en-IN")} votes{election.margin ? ` · margin ${election.margin.toLocaleString("en-IN")}` : ""}</small></div>{election.source?.url && <a href={election.source.url} target="_blank" rel="noreferrer" aria-label={`Open source for ${election.year} election`}><ExternalLink size={15} /></a>}</article>)}</section>}{person.sources.length > 0 && <section className="representative-detail-card"><h2>Verified sources</h2>{person.sources.map((source, index) => <a className="detail-source-link" key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer"><FileText size={16} /><span><b>{source.title}</b><small>{source.publisher}{source.accessedAt ? ` · checked ${source.accessedAt}` : ""}</small></span><ExternalLink size={14} /></a>)}</section>}{person.recordData && Object.keys(person.recordData).length > 0 && <section className="representative-detail-card"><h2>Additional public records</h2><dl className="detail-facts">{Object.entries(person.recordData).map(([key, value]) => <div key={key}><dt>{key.replace(/([A-Z])/g, " $1")}</dt><dd>{typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)}</dd></div>)}</dl></section>}</div></div></>}</main></div>;
 }
 
 function ProfileCompletionModal({ user, busy, onSubmit }: { user: User; busy: boolean; onSubmit: (profile: { firstName: string; lastName: string; phoneNumber: string; gender: Gender }) => Promise<void> }) {
