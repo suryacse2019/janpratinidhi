@@ -1,0 +1,13 @@
+{
+  "name": "janpratinidhi",
+  "private": true,
+  "version": "0.1.0",
+  "description": "An open directory of India's elected representatives and their public records.",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev -w @janpratinidhi/api\" \"npm run dev -w @janpratinidhi/web\"",
+    "build": "npm run build -w @janpratinidhi/shared && npm run build -w @janpratinidhi/api && npm run build -w @janpratinidhi/web",
+    "typecheck": "npm run typecheck -w @janpratinidhi/shared && npm run typecheck -w @janpratinidhi/api && npm run typecheck -w @janpratinidhi/web"
+  },
+  "devDependencies": {"concurrently":"^9.1.2","typescript":"^5.7.3"}
+}
