@@ -14,6 +14,7 @@ type AdminStats = { users: number; representatives: number; published: number; d
 type GoogleCredential = { credential: string };
 type DirectoryFilters = { states: string[]; parties: string[] };
 type SearchResponse = { data: Array<Record<string, unknown>>; pagination: { page: number; limit: number; total: number; totalPages: number } };
+type ExternalProfile = { wikipediaUrl?: string; wikidataUrl?: string; prsUrl?: string; educationSourceUrl?: string; educationSourceLabel?: string; summary?: string; education: string[]; history: Array<{ position: string; start?: string; end?: string }>; family: Array<{ relation: string; name: string }>; performance?: Record<string, string>; performancePeriod?: string; fetchedAt: string };
 
 function normalizeRepresentative(record: Record<string, unknown>): Profile {
   const name = String(record.name ?? "");
@@ -419,8 +420,37 @@ function RepresentativeAvatar({ person, tone = "tone-peach", showSpark = false }
   </span>;
 }
 
+const SUGGEST_INFO_URL = "https://github.com/suryacse2019/janpratinidhi/issues/new";
+
+function readRecordSection(recordData: Profile["recordData"], ...names: string[]): unknown {
+  if (!recordData) return undefined;
+  const wanted = new Set(names.map((name) => name.toLowerCase().replace(/[^a-z]/g, "")));
+  const entry = Object.entries(recordData).find(([key]) => wanted.has(key.toLowerCase().replace(/[^a-z]/g, "")));
+  return entry?.[1];
+}
+
+function hasRecordValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value)) return value.some(hasRecordValue);
+  if (typeof value === "object") return Object.values(value as Record<string, unknown>).some(hasRecordValue);
+  return true;
+}
+
+function RecordValue({ value }: { value: unknown }) {
+  if (Array.isArray(value)) return <ul className="record-value-list">{value.map((item, index) => <li key={index}><RecordValue value={item} /></li>)}</ul>;
+  if (value && typeof value === "object") return <dl className="record-value-facts">{Object.entries(value as Record<string, unknown>).filter(([, item]) => hasRecordValue(item)).map(([key, item]) => <div key={key}><dt>{key.replace(/([A-Z])/g, " $1").replace(/[_-]/g, " ")}</dt><dd><RecordValue value={item} /></dd></div>)}</dl>;
+  return <>{typeof value === "boolean" ? (value ? "Yes" : "No") : String(value)}</>;
+}
+
+function RepresentativeInfoSection({ title, value, sourceUrl, sourceLabel = "Wikidata", loading = false }: { title: string; value: unknown; sourceUrl?: string; sourceLabel?: string; loading?: boolean }) {
+  const available = hasRecordValue(value);
+  return <section className="representative-detail-card representative-info-section"><h2>{title}</h2>{available ? <div className="representative-info-value"><RecordValue value={value} />{sourceUrl && <a className="external-data-source" href={sourceUrl} target="_blank" rel="noreferrer">Source: {sourceLabel} <ExternalLink size={13} /></a>}</div> : <div className="info-unavailable"><p>{loading ? "Searching external sources for a matching profile…" : "Data not available from a matched public source."}</p>{sourceUrl && <a href={sourceUrl} target="_blank" rel="noreferrer">Check {sourceLabel} profile <ExternalLink size={14} /></a>}<a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">Help us add this info <ExternalLink size={14} /></a></div>}</section>;
+}
+
 function RepresentativeDetailsPage({ identifier, theme, onToggleTheme }: { identifier: string; theme: "light" | "dark"; onToggleTheme: () => void }) {
   const [person, setPerson] = useState<Profile | null>(null);
+  const [externalProfile, setExternalProfile] = useState<ExternalProfile | null>(null);
+  const [externalLoading, setExternalLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -432,8 +462,76 @@ function RepresentativeDetailsPage({ identifier, theme, onToggleTheme }: { ident
     }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Could not load this record"); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [identifier]);
+  useEffect(() => {
+    if (!person) return;
+    let active = true;
+    setExternalLoading(true);
+    fetch(`${API_URL}/representatives/${encodeURIComponent(identifier)}/external-profile`).then(async (response) => {
+      if (!response.ok) throw new Error("External profile lookup failed");
+      const body = await response.json() as { data: ExternalProfile | null };
+      if (active) setExternalProfile(body.data);
+    }).catch(() => { if (active) setExternalProfile(null); }).finally(() => { if (active) setExternalLoading(false); });
+    return () => { active = false; };
+  }, [identifier, person?.id]);
   const house = person?.house || (person?.office === "Lok Sabha MP" ? "Lok Sabha" : person?.office === "Rajya Sabha MP" ? "Rajya Sabha" : person?.office === "MLA" ? "Vidhan Sabha" : "");
-  return <div className="dashboard-shell profile-route-shell"><header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="theme-header-actions"><ThemeToggle theme={theme} onToggle={onToggleTheme} /><a className="dashboard-back-link" href="/politician">← Back to politicians</a></div></header><main className="representative-detail-main">{loading ? <div className="directory-state" role="status"><span className="loading-spinner" />Loading representative record…</div> : error || !person ? <div className="directory-state error-state" role="alert"><h1>Record unavailable</h1><p>{error || "This representative is not in the published directory."}</p><a href="/politician" className="primary-button">Return to politicians <ArrowRight size={15} /></a></div> : <><a className="dashboard-back-link detail-back" href="/politician">← Back to politicians</a><section className="representative-profile-hero"><RepresentativePhoto url={person.photoUrl} initials={person.initials} name={person.name} /><div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p>{person.party}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div></section><div className="representative-detail-grid"><section className="representative-detail-card"><h2>Representative details</h2><dl className="detail-facts">{person.state && <div><dt>State</dt><dd>{person.state}</dd></div>}{person.constituency && <div><dt>Constituency</dt><dd>{person.constituency}</dd></div>}{house && <div><dt>House</dt><dd>{house}</dd></div>}{(person.termStart || person.termEnd || person.since) && <div><dt>Term</dt><dd>{person.termStart || person.since || ""}{person.termEnd ? ` – ${person.termEnd}` : person.termStart || person.since ? " – Present" : ""}</dd></div>}{person.electionYear && <div><dt>Election year</dt><dd>{person.electionYear}</dd></div>}{person.education && <div><dt>Education</dt><dd>{person.education}</dd></div>}</dl>{(person.description || person.summary) && <div className="profile-description"><h3>Biography</h3><p>{person.description || person.summary}</p></div>}</section><div className="representative-record-column">{person.elections.length > 0 && <section className="representative-detail-card"><h2>Election information</h2>{person.elections.map((election, index) => <article className="detail-election-row" key={`${election.year}-${index}`}><div><b>{election.year} · {election.electionType}</b><p>{election.constituency}, {election.state}</p><small>{election.party} · {election.result} · {election.votes.toLocaleString("en-IN")} votes{election.margin ? ` · margin ${election.margin.toLocaleString("en-IN")}` : ""}</small></div>{election.source?.url && <a href={election.source.url} target="_blank" rel="noreferrer" aria-label={`Open source for ${election.year} election`}><ExternalLink size={15} /></a>}</article>)}</section>}{person.sources.length > 0 && <section className="representative-detail-card"><h2>Verified sources</h2>{person.sources.map((source, index) => <a className="detail-source-link" key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer"><FileText size={16} /><span><b>{source.title}</b><small>{source.publisher}{source.accessedAt ? ` · checked ${source.accessedAt}` : ""}</small></span><ExternalLink size={14} /></a>)}</section>}{person.recordData && Object.keys(person.recordData).length > 0 && <section className="representative-detail-card"><h2>Additional public records</h2><dl className="detail-facts">{Object.entries(person.recordData).map(([key, value]) => <div key={key}><dt>{key.replace(/([A-Z])/g, " $1")}</dt><dd>{typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)}</dd></div>)}</dl></section>}</div></div></>}</main></div>;
+  const termStart = person?.termStart || person?.since;
+  const termText = termStart ? `${termStart}${person?.termEnd ? ` – ${person.termEnd}` : " – Present"}` : person?.termEnd;
+  const storedPerformance = readRecordSection(person?.recordData, "performance", "performanceDetails");
+  const performance = hasRecordValue(storedPerformance) ? storedPerformance : externalProfile?.performance ? { ...externalProfile.performance, ...(externalProfile.performancePeriod ? { reportingPeriod: externalProfile.performancePeriod } : {}) } : undefined;
+  const storedHistory = readRecordSection(person?.recordData, "history", "politicalHistory", "careerHistory");
+  const externalHistory = [...(externalProfile?.history ?? []), ...(person?.elections ?? []).map(({ year, electionType, constituency, state, party, result }) => ({ year, electionType, constituency, state, party, result }))];
+  const history = hasRecordValue(storedHistory) ? storedHistory : externalHistory.length ? externalHistory : undefined;
+  const education = person?.education || externalProfile?.education;
+  const storedFamily = readRecordSection(person?.recordData, "familyDetails", "family");
+  const family = hasRecordValue(storedFamily) ? storedFamily : externalProfile?.family;
+  const contact = readRecordSection(person?.recordData, "contact", "contactDetails");
+  const additionalRecords = Object.entries(person?.recordData ?? {}).filter(([key, value]) =>
+    !["performance", "performancedetails", "history", "politicalhistory", "careerhistory", "family", "familydetails", "contact", "contactdetails"].includes(key.toLowerCase().replace(/[^a-z]/g, "")) && hasRecordValue(value),
+  );
+  const issueTitle = person ? `Correction or missing information: ${person.name}` : "Politician information correction";
+  const issueBody = person ? [
+    "## What is incorrect?",
+    "Describe the incorrect or missing information here.",
+    "",
+    "## Suggested correction",
+    "Add the correct information here.",
+    "",
+    "## Additional Notes",
+    "Optional notes/screenshots.",
+    "",
+    `Politician: ${person.name}`,
+    `Profile: ${window.location.origin}/representatives/${encodeURIComponent(person.slug || person.id)}`,
+  ].join("\n") : "## What is incorrect?\n\nDescribe the incorrect or missing information here.\n\n## Suggested correction\n\nAdd the correct information here.\n\n## Additional Notes\n\nOptional notes/screenshots.";
+  const issueUrl = `${SUGGEST_INFO_URL}?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
+
+  return <div className="dashboard-shell profile-route-shell">
+    <header className="dashboard-topbar"><a className="brand" href="/"><span className="brand-mark"><Landmark size={19} /></span><span className="brand-name">janpratinidhi<span>.</span></span></a><div className="theme-header-actions"><ThemeToggle theme={theme} onToggle={onToggleTheme} /><a className="dashboard-back-link" href="/politician">← Back to politicians</a></div></header>
+    <main className="representative-detail-main">
+      {loading ? <div className="directory-state" role="status"><span className="loading-spinner" />Loading representative record…</div> : error || !person ? <div className="directory-state error-state" role="alert"><h1>Record unavailable</h1><p>{error || "This representative is not in the published directory."}</p><a href="/politician" className="primary-button">Return to politicians <ArrowRight size={15} /></a></div> : <>
+        <a className="dashboard-back-link detail-back" href="/politician">← Back to politicians</a>
+        <section className="representative-overview-card">
+          <div className="representative-overview-identity">
+            <RepresentativePhoto url={person.photoUrl} initials={person.initials} name={person.name} />
+            <div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p>{person.party}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div>
+          </div>
+          <div className="representative-overview-about"><h2>About</h2><p>{person.description || person.summary || "A biography has not been added for this representative yet."}</p></div>
+          <div className="representative-overview-facts"><h2>Details</h2><dl className="detail-facts">{person.state && <div><dt>State</dt><dd>{person.state}</dd></div>}{person.constituency && <div><dt>Constituency</dt><dd>{person.constituency}</dd></div>}{house && <div><dt>House</dt><dd>{house}</dd></div>}{termText && <div><dt>Term</dt><dd>{termText}</dd></div>}{person.electionYear && <div><dt>Election year</dt><dd>{person.electionYear}</dd></div>}</dl></div>
+        </section>
+        <div className="representative-detail-sections">
+          <RepresentativeInfoSection title="External biography" value={externalProfile?.summary} sourceUrl={externalProfile?.wikipediaUrl} sourceLabel="Wikipedia · CC BY-SA 4.0" loading={externalLoading} />
+          <RepresentativeInfoSection title="Performance" value={performance} sourceUrl={externalProfile?.prsUrl} sourceLabel="PRS India · CC BY 4.0" />
+          <RepresentativeInfoSection title="History" value={history} sourceUrl={externalProfile?.wikidataUrl} />
+          <RepresentativeInfoSection title="Education" value={education} sourceUrl={externalProfile?.educationSourceUrl} sourceLabel={externalProfile?.educationSourceLabel ?? "Wikidata"} />
+          <RepresentativeInfoSection title="Family Details" value={family} sourceUrl={externalProfile?.wikidataUrl} />
+          <RepresentativeInfoSection title="Contact" value={contact} />
+          <section className="representative-detail-card"><h2>Verified sources</h2>{person.sources.length ? person.sources.map((source, index) => <a className="detail-source-link" key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer"><FileText size={16} /><span><b>{source.title}</b><small>{source.publisher}{source.accessedAt ? ` · checked ${source.accessedAt}` : ""}</small></span><ExternalLink size={14} /></a>) : <div className="info-unavailable"><p>No verified source links are stored for this representative.</p><a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">Help us add a source <ExternalLink size={14} /></a></div>}</section>
+          <section className="representative-detail-card"><h2>Additional public records</h2>{additionalRecords.length ? <dl className="detail-facts">{additionalRecords.map(([key, value]) => <div key={key}><dt>{key.replace(/([A-Z])/g, " $1")}</dt><dd><RecordValue value={value} /></dd></div>)}</dl> : <div className="info-unavailable"><p>No additional public records are available in this profile.</p><a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">Help us add this info <ExternalLink size={14} /></a></div>}</section>
+          <section className="representative-detail-card report-issue-card"><div><h2>Found an issue with this politician’s information?</h2><p>Report missing or incorrect details. Add a source link when you can so the record can be checked.</p></div><a className="primary-button" href={issueUrl} target="_blank" rel="noreferrer">Report an issue on GitHub <ArrowUpRight size={15} /></a></section>
+        </div>
+      </>}
+    </main>
+  </div>;
+
 }
 
 function ProfileCompletionModal({ user, busy, onSubmit }: { user: User; busy: boolean; onSubmit: (profile: { firstName: string; lastName: string; phoneNumber: string; gender: Gender }) => Promise<void> }) {
