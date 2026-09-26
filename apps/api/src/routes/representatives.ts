@@ -17,11 +17,78 @@ type ExternalProfile = {
   performance?: Record<string, string>;
   performancePeriod?: string;
   prsEducation?: string[];
+  sansadUrl?: string;
+  sansadRecord?: Record<string, string>;
+  sansadHistory?: Array<{ position: string; start?: string; end?: string }>;
+  photoUrl?: string;
+  photoSourceUrl?: string;
+  partySymbolUrl?: string;
+  publicSourceLinks?: Array<{ title: string; url: string }>;
+  socialAccounts?: Array<{ platform: string; url: string }>;
+  publicEmail?: string;
   fetchedAt: string;
 };
 const externalProfileCache = new Map<string, { expiresAt: number; value: ExternalProfile | null }>();
+const partyImageCache = new Map<string, { expiresAt: number; url?: string }>();
 const prsPerformanceCache = new Map<string, { expiresAt: number; value: Pick<ExternalProfile, "prsUrl" | "performance" | "performancePeriod" | "prsEducation"> | null }>();
+const sansadProfileCache = new Map<string, { expiresAt: number; value: Pick<ExternalProfile, "sansadUrl" | "sansadRecord" | "sansadHistory" | "photoUrl" | "photoSourceUrl" | "education" | "publicEmail"> | null }>();
 const normalizePersonName = (value: string) => value.toLowerCase().replace(/\b(shri|smt|dr|mr|mrs|ms|hon|honourable)\b/g, " ").replace(/\([^)]*\)/g, " ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+const normalizeCivicLocation = (value: string) => normalizePersonName(value).replace(/^nct of delhi$/, "delhi").replace(/^delhi nct$/, "delhi");
+
+async function sansadMember(person: { name: string; state: string; party: string; constituency: string; office: string }): Promise<Pick<ExternalProfile, "sansadUrl" | "sansadRecord" | "sansadHistory" | "photoUrl" | "photoSourceUrl" | "education" | "publicEmail"> | null> {
+  if (person.office !== "Lok Sabha MP") return null;
+  const key = `${normalizePersonName(person.name)}|${normalizeCivicLocation(person.state)}|${normalizePersonName(person.constituency)}`;
+  const cached = sansadProfileCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  try {
+    const apiUrl = new URL("https://sansad.in/api_ls/member");
+    apiUrl.search = new URLSearchParams({ loksabha: "18", state: "", party: "", gender: "", ageFrom: "", ageTo: "", noOfTerms: "", page: "1", size: "30", searchText: person.name, constituency: "", sitting: "1", locale: "en", month: "", profession: "", otherProfession: "", constituencyCategory: "", positionCode: "", qualification: "", noOfChildren: "", isFreedomFighter: "", memberStatus: "s" }).toString();
+    const response = await fetch(apiUrl, { headers: { "User-Agent": "Janpratinidhi/1.0 (public representative directory; https://janpratinidhi.org)", Accept: "application/json, text/plain, */*", Referer: "https://sansad.in/ls/members" }, signal: AbortSignal.timeout(6500) });
+    if (!response.ok) throw new Error(`Sansad returned ${response.status}`);
+    const payload = await response.json() as unknown;
+    type MemberRow = { mpsno?: number; mpFirstLastName?: string; mpLastFirstName?: string; firstName?: string; lastName?: string; stateName?: string; constName?: string; partyFname?: string; partySname?: string; status?: string; imageUrl?: string; email?: string[] | string; qualification?: string; profession?: string; profession2?: string; noOfTerms?: number; age?: number; lsExpr?: string };
+    const collectRows = (value: unknown): MemberRow[] => {
+      if (Array.isArray(value)) {
+        if (value.some((item) => item && typeof item === "object" && "mpsno" in item)) return value as MemberRow[];
+        return value.flatMap(collectRows);
+      }
+      if (value && typeof value === "object") return Object.values(value as Record<string, unknown>).flatMap(collectRows);
+      return [];
+    };
+    const candidateRows = collectRows(payload).filter((row) => {
+      const names = [row.mpFirstLastName, row.mpLastFirstName, [row.firstName, row.lastName].filter(Boolean).join(" ")].filter(Boolean);
+      return names.some((name) => normalizePersonName(String(name)) === normalizePersonName(person.name))
+        && normalizeCivicLocation(String(row.stateName ?? "")) === normalizeCivicLocation(person.state)
+        && normalizePersonName(String(row.constName ?? "")) === normalizePersonName(person.constituency);
+    });
+    const member = candidateRows.find((row) => normalizePersonName(String(row.partyFname ?? "")) === normalizePersonName(person.party)) ?? candidateRows[0];
+    if (!member?.mpsno) { sansadProfileCache.set(key, { expiresAt: Date.now() + 6 * 60 * 60_000, value: null }); return null; }
+    const sansadUrl = `https://sansad.in/ls/members/biography/${member.mpsno}?from=members`;
+    const photoUrl = member.imageUrl && /^https:\/\/sansad\.in\//i.test(member.imageUrl) ? member.imageUrl : undefined;
+    const emails = (Array.isArray(member.email) ? member.email : typeof member.email === "string" ? member.email.split(/[;,]/) : []).map((email) => email.trim().replace(/^\(i\)\s*/i, "")).filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    const publicEmail = emails.find((email) => /@(?:mpls\.)?sansad\.nic\.in$/i.test(email)) ?? emails.find((email) => /@sansad\.nic\.in$/i.test(email));
+    const termNumbers = [...new Set((String(member.lsExpr ?? "").match(/\d+/g) ?? []).map(Number).filter((term) => term > 0 && term <= 18))].sort((a, b) => a - b);
+    const lokSabhaYears: Record<number, [string, string?]> = { 1: ["1952", "1957"], 2: ["1957", "1962"], 3: ["1962", "1967"], 4: ["1967", "1970"], 5: ["1971", "1977"], 6: ["1977", "1980"], 7: ["1980", "1984"], 8: ["1984", "1989"], 9: ["1989", "1991"], 10: ["1991", "1996"], 11: ["1996", "1998"], 12: ["1998", "1999"], 13: ["1999", "2004"], 14: ["2004", "2009"], 15: ["2009", "2014"], 16: ["2014", "2019"], 17: ["2019", "2024"], 18: ["2024"] };
+    const sansadHistory = termNumbers.map((term) => {
+      const [start, end] = lokSabhaYears[term];
+      const ordinal = `${term}${term % 10 === 1 && term % 100 !== 11 ? "st" : term % 10 === 2 && term % 100 !== 12 ? "nd" : term % 10 === 3 && term % 100 !== 13 ? "rd" : "th"}`;
+      return { position: `${ordinal} Lok Sabha membership`, start, end };
+    });
+    const sansadRecord: Record<string, string> = {};
+    if (member.status) sansadRecord.membershipStatus = member.status;
+    if (member.partySname) sansadRecord.partyAbbreviation = member.partySname;
+    if (member.noOfTerms) sansadRecord.lokSabhaTermsServed = String(member.noOfTerms);
+    if (member.profession?.trim()) sansadRecord.profession = member.profession.trim();
+    if (member.profession2?.trim()) sansadRecord.otherProfession = member.profession2.trim();
+    if (member.age) sansadRecord.age = String(member.age);
+    const value = { sansadUrl, sansadRecord, sansadHistory, photoUrl, photoSourceUrl: photoUrl ? sansadUrl : undefined, education: member.qualification?.trim() ? [member.qualification.trim()] : [], publicEmail };
+    sansadProfileCache.set(key, { expiresAt: Date.now() + 24 * 60 * 60_000, value });
+    if (sansadProfileCache.size > 5000) sansadProfileCache.delete(sansadProfileCache.keys().next().value!);
+    return value;
+  } catch {
+    return null;
+  }
+}
 async function wikipediaProfile(person: { name: string; state: string; party: string }): Promise<ExternalProfile | null> {
   const key = `${normalizePersonName(person.name)}|${normalizePersonName(person.state)}`;
   const cached = externalProfileCache.get(key);
@@ -40,9 +107,9 @@ async function wikipediaProfile(person: { name: string; state: string; party: st
     if (!exact) { externalProfileCache.set(key, { expiresAt: Date.now() + 6 * 60 * 60_000, value: null }); return null; }
 
     const pageUrl = new URL("https://en.wikipedia.org/w/api.php");
-    pageUrl.search = new URLSearchParams({ action: "query", prop: "extracts|pageprops", exintro: "1", explaintext: "1", titles: exact.title, format: "json", origin: "*" }).toString();
+    pageUrl.search = new URLSearchParams({ action: "query", prop: "extracts|pageprops|pageimages|extlinks", exintro: "1", explaintext: "1", piprop: "thumbnail", pithumbsize: "512", ellimit: "30", titles: exact.title, format: "json", origin: "*" }).toString();
     const pageResult = await fetchJson(pageUrl);
-    const page = Object.values(pageResult.query?.pages ?? {})[0] as { extract?: string; pageprops?: { wikibase_item?: string } } | undefined;
+    const page = Object.values(pageResult.query?.pages ?? {})[0] as { extract?: string; pageprops?: { wikibase_item?: string }; thumbnail?: { source?: string }; extlinks?: Array<{ "*"?: string }> } | undefined;
     const summary = String(page?.extract ?? "").trim();
     const contextTerms = [person.state, person.party].map((value) => value.trim().toLowerCase()).filter((value) => value.length >= 4);
     const contextMatches = contextTerms.some((value) => summary.toLowerCase().includes(value));
@@ -51,6 +118,19 @@ async function wikipediaProfile(person: { name: string; state: string; party: st
     }
 
     const profile: ExternalProfile = { wikipediaUrl: `https://en.wikipedia.org/wiki/${encodeURIComponent(exact.title.replace(/ /g, "_"))}`, summary, education: [], history: [], family: [], fetchedAt: new Date().toISOString() };
+    const sourceHostAllowed = (hostname: string) => hostname === "sansad.in" || hostname.endsWith(".sansad.in") || hostname === "prsindia.org" || hostname.endsWith(".prsindia.org") || hostname === "eci.gov.in" || hostname.endsWith(".eci.gov.in") || hostname.endsWith(".gov.in") || hostname.endsWith(".nic.in") || hostname === "facebook.com" || hostname.endsWith(".facebook.com") || hostname === "instagram.com" || hostname.endsWith(".instagram.com") || hostname === "youtube.com" || hostname.endsWith(".youtube.com") || hostname === "x.com" || hostname.endsWith(".x.com") || hostname === "twitter.com" || hostname.endsWith(".twitter.com");
+    profile.publicSourceLinks = (page?.extlinks ?? []).flatMap(({ "*": rawUrl }) => {
+      try {
+        if (!rawUrl) return [];
+        const parsed = new URL(rawUrl);
+        if (parsed.protocol !== "https:" || !sourceHostAllowed(parsed.hostname.toLowerCase())) return [];
+        return [{ title: parsed.hostname.replace(/^www\./, ""), url: parsed.toString() }];
+      } catch { return []; }
+    }).filter((link, index, links) => links.findIndex((candidate) => candidate.url === link.url) === index).slice(0, 15);
+    if (page?.thumbnail?.source) {
+      profile.photoUrl = page.thumbnail.source;
+      profile.photoSourceUrl = profile.wikipediaUrl;
+    }
     const qid = page?.pageprops?.wikibase_item;
     if (qid && /^Q\d+$/.test(qid)) {
       profile.wikidataUrl = `https://www.wikidata.org/wiki/${qid}`;
@@ -58,6 +138,30 @@ async function wikipediaProfile(person: { name: string; state: string; party: st
       entityUrl.search = new URLSearchParams({ action: "wbgetentities", ids: qid, props: "claims", format: "json", origin: "*" }).toString();
       const entityResult = await fetchJson(entityUrl);
       const claims = entityResult.entities?.[qid]?.claims ?? {};
+      const firstStringClaim = (property: string): string | undefined => {
+        const claimsForProperty = claims[property] as Array<{ mainsnak?: { datavalue?: { value?: unknown } } }> | undefined;
+        const value = claimsForProperty?.map((claim) => claim.mainsnak?.datavalue?.value).find((item) => typeof item === "string");
+        return typeof value === "string" ? value.trim() : undefined;
+      };
+      const usernameClaim = (property: string) => firstStringClaim(property)?.replace(/^@/, "").trim();
+      const twitter = usernameClaim("P2002");
+      const facebook = usernameClaim("P2013");
+      const instagram = usernameClaim("P2003");
+      const youtube = firstStringClaim("P2397");
+      const socialAccounts: Array<{ platform: string; url: string }> = [];
+      if (twitter && /^[A-Za-z0-9_]{1,50}$/.test(twitter)) socialAccounts.push({ platform: "X / Twitter", url: `https://x.com/${encodeURIComponent(twitter)}` });
+      if (facebook && /^[A-Za-z0-9.\-_]{1,100}$/.test(facebook)) socialAccounts.push({ platform: "Facebook", url: `https://www.facebook.com/${encodeURIComponent(facebook)}` });
+      if (instagram && /^[A-Za-z0-9._]{1,30}$/.test(instagram)) socialAccounts.push({ platform: "Instagram", url: `https://www.instagram.com/${encodeURIComponent(instagram)}/` });
+      if (youtube && /^[A-Za-z0-9_-]{10,}$/.test(youtube)) socialAccounts.push({ platform: "YouTube", url: `https://www.youtube.com/channel/${encodeURIComponent(youtube)}` });
+      profile.socialAccounts = socialAccounts;
+      const email = firstStringClaim("P968")?.replace(/^mailto:/i, "");
+      if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) profile.publicEmail = email;
+      const photo = firstStringClaim("P18")?.replace(/^File:/i, "");
+      if (photo && !profile.photoUrl) {
+        const encodedPhoto = encodeURIComponent(photo.replace(/ /g, "_"));
+        profile.photoUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedPhoto}?width=512`;
+        profile.photoSourceUrl = `https://commons.wikimedia.org/wiki/File:${encodedPhoto}`;
+      }
       const readIds = (property: string) => ((claims[property] ?? []) as Array<{ mainsnak?: { datavalue?: { value?: { id?: string } } }; qualifiers?: Record<string, Array<{ datavalue?: { value?: { time?: string } } }>> }>).flatMap((claim) => {
         const id = claim.mainsnak?.datavalue?.value?.id;
         if (!id || !/^Q\d+$/.test(id)) return [];
@@ -84,6 +188,31 @@ async function wikipediaProfile(person: { name: string; state: string; party: st
   } catch {
     return null;
   }
+}
+
+async function wikipediaPartyImage(party: string): Promise<string | undefined> {
+  const key = normalizePersonName(party);
+  const cached = partyImageCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.url;
+  try {
+    const searchUrl = new URL("https://en.wikipedia.org/w/api.php");
+    searchUrl.search = new URLSearchParams({ action: "query", list: "search", srsearch: `intitle:\"${party}\" political party India`, srlimit: "5", format: "json", origin: "*" }).toString();
+    const searchResponse = await fetch(searchUrl, { headers: { "User-Agent": "Janpratinidhi/1.0 (public representative directory; https://janpratinidhi.org)" }, signal: AbortSignal.timeout(6000) });
+    if (!searchResponse.ok) throw new Error(`Wikipedia returned ${searchResponse.status}`);
+    const search = await searchResponse.json() as Record<string, any>;
+    const match = (search.query?.search ?? []).find((item: { title?: string }) => normalizePersonName(item.title ?? "") === key);
+    if (!match?.title) { partyImageCache.set(key, { expiresAt: Date.now() + 12 * 60 * 60_000 }); return undefined; }
+    const imageUrl = new URL("https://en.wikipedia.org/w/api.php");
+    imageUrl.search = new URLSearchParams({ action: "query", prop: "pageimages", piprop: "thumbnail", pithumbsize: "256", titles: match.title, format: "json", origin: "*" }).toString();
+    const imageResponse = await fetch(imageUrl, { headers: { "User-Agent": "Janpratinidhi/1.0 (public representative directory; https://janpratinidhi.org)" }, signal: AbortSignal.timeout(6000) });
+    if (!imageResponse.ok) throw new Error(`Wikipedia returned ${imageResponse.status}`);
+    const imageData = await imageResponse.json() as Record<string, any>;
+    const page = Object.values(imageData.query?.pages ?? {})[0] as { thumbnail?: { source?: string } } | undefined;
+    const url = page?.thumbnail?.source;
+    partyImageCache.set(key, { expiresAt: Date.now() + 24 * 60 * 60_000, url });
+    if (partyImageCache.size > 1000) partyImageCache.delete(partyImageCache.keys().next().value!);
+    return url;
+  } catch { return undefined; }
 }
 
 async function prsPerformance(person: { name: string; office: string; state: string }): Promise<Pick<ExternalProfile, "prsUrl" | "performance" | "performancePeriod" | "prsEducation"> | null> {
@@ -134,6 +263,24 @@ const addTextSearch = (filter: Record<string, unknown>, value: string) => {
   const pattern = { $regex: escapeRegex(value.trim().slice(0, 100)), $options: "i" };
   filter.$or = [{ name: pattern }, { party: pattern }, { state: pattern }, { constituency: pattern }];
 };
+async function findPartyGroupedPage(filter: Record<string, unknown>, page: number, limit: number) {
+  const groups = await RepresentativeModel.aggregate([
+    { $match: filter as any },
+    { $group: { _id: "$party", count: { $sum: 1 } } },
+    { $sort: { count: -1, _id: 1 } },
+  ]) as Array<{ _id: string; count: number }>;
+  const partyOrder = groups.map(({ _id }) => _id);
+  const total = groups.reduce((sum, group) => sum + group.count, 0);
+  const data = partyOrder.length ? await RepresentativeModel.aggregate([
+    { $match: filter as any },
+    { $addFields: { __partySortRank: { $indexOfArray: [partyOrder, "$party"] } } },
+    { $sort: { __partySortRank: 1, name: 1 } },
+    { $skip: (page - 1) * limit },
+    { $limit: limit },
+    { $project: { __partySortRank: 0 } },
+  ]) : [];
+  return { data, total };
+}
 
 representativesRouter.get("/", async (req, res, next) => {
   try {
@@ -153,10 +300,7 @@ representativesRouter.get("/", async (req, res, next) => {
     else if (type === "MLA") filter.office = "MLA";
     else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] };
     addTextSearch(filter, q);
-    const [data, total] = await Promise.all([
-      RepresentativeModel.find(filter).sort({ name: 1 }).skip((page - 1) * limit).limit(limit).lean(),
-      RepresentativeModel.countDocuments(filter),
-    ]);
+    const { data, total } = await findPartyGroupedPage(filter, page, limit);
     res.json({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) { next(error); }
 });
@@ -199,11 +343,30 @@ representativesRouter.get("/search", requireUser, async (req, res, next) => {
     else if (type === "MLA") filter.office = "MLA";
     else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] };
     addTextSearch(filter, q);
-    const [data, total] = await Promise.all([
-      RepresentativeModel.find(filter).sort({ name: 1 }).skip((page - 1) * limit).limit(limit).lean(),
-      RepresentativeModel.countDocuments(filter),
-    ]);
+    const { data, total } = await findPartyGroupedPage(filter, page, limit);
     res.json({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+  } catch (error) { next(error); }
+});
+
+representativesRouter.get("/:id/card-media", async (req, res, next) => {
+  try {
+    const identifier = req.params.id;
+    const personQuery = /^[a-f\d]{24}$/i.test(identifier)
+      ? RepresentativeModel.findById(identifier).where({ status: "published", sample: { $ne: true } })
+      : RepresentativeModel.findOne({ slug: identifier, status: "published", sample: { $ne: true } });
+    const person = await personQuery.select("name state party constituency office photoUrl partySymbolUrl").lean() as unknown as { name?: unknown; state?: unknown; party?: unknown; constituency?: unknown; office?: unknown; photoUrl?: unknown; partySymbolUrl?: unknown } | null;
+    if (!person) return res.status(404).json({ error: "Representative not found" });
+    const identity = { name: String(person.name ?? ""), state: String(person.state ?? ""), party: String(person.party ?? ""), constituency: String(person.constituency ?? ""), office: String(person.office ?? "") };
+    const [externalProfile, sansad, partySymbolUrl] = await Promise.all([
+      person.photoUrl ? Promise.resolve(null) : wikipediaProfile(identity),
+      sansadMember(identity),
+      person.partySymbolUrl ? Promise.resolve(undefined) : wikipediaPartyImage(String(person.party ?? "")),
+    ]);
+    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400").json({
+      photoUrl: person.photoUrl || sansad?.photoUrl || externalProfile?.photoUrl,
+      photoSourceUrl: sansad?.photoSourceUrl || externalProfile?.photoSourceUrl,
+      partySymbolUrl: person.partySymbolUrl || partySymbolUrl,
+    });
   } catch (error) { next(error); }
 });
 
@@ -213,15 +376,18 @@ representativesRouter.get("/:id/external-profile", async (req, res, next) => {
     const personQuery = /^[a-f\d]{24}$/i.test(identifier)
       ? RepresentativeModel.findById(identifier).where({ status: "published", sample: { $ne: true } })
       : RepresentativeModel.findOne({ slug: identifier, status: "published", sample: { $ne: true } });
-    const person = await personQuery.select("name state party office").lean() as unknown as { name?: unknown; state?: unknown; party?: unknown; office?: unknown } | null;
+    const person = await personQuery.select("name state party office constituency").lean() as unknown as { name?: unknown; state?: unknown; party?: unknown; office?: unknown; constituency?: unknown } | null;
     if (!person) return res.status(404).json({ error: "Representative not found" });
     const identity = { name: String(person.name ?? ""), state: String(person.state ?? ""), party: String(person.party ?? "") };
-    const [wikipedia, performance] = await Promise.all([
+    const [wikipedia, performance, partySymbolUrl, sansad] = await Promise.all([
       wikipediaProfile(identity),
       prsPerformance({ ...identity, office: String(person.office ?? "") }),
+      wikipediaPartyImage(identity.party),
+      sansadMember({ ...identity, office: String(person.office ?? ""), constituency: String(person.constituency ?? "") }),
     ]);
     const hasWikidataEducation = Boolean(wikipedia?.education?.length);
-    const data: ExternalProfile | null = wikipedia || performance ? { wikipediaUrl: wikipedia?.wikipediaUrl, wikidataUrl: wikipedia?.wikidataUrl, prsUrl: performance?.prsUrl, educationSourceUrl: hasWikidataEducation ? wikipedia?.wikidataUrl : performance?.prsUrl, educationSourceLabel: hasWikidataEducation ? "Wikidata" : performance?.prsEducation?.length ? "PRS India" : undefined, summary: wikipedia?.summary, education: hasWikidataEducation ? wikipedia?.education ?? [] : performance?.prsEducation ?? [], history: wikipedia?.history ?? [], family: wikipedia?.family ?? [], performance: performance?.performance, performancePeriod: performance?.performancePeriod, fetchedAt: wikipedia?.fetchedAt ?? new Date().toISOString() } : null;
+    const hasSansadEducation = Boolean(sansad?.education.length);
+    const data: ExternalProfile | null = wikipedia || performance || partySymbolUrl || sansad ? { wikipediaUrl: wikipedia?.wikipediaUrl, wikidataUrl: wikipedia?.wikidataUrl, prsUrl: performance?.prsUrl, sansadUrl: sansad?.sansadUrl, sansadRecord: sansad?.sansadRecord, sansadHistory: sansad?.sansadHistory, educationSourceUrl: hasSansadEducation ? sansad?.sansadUrl : hasWikidataEducation ? wikipedia?.wikidataUrl : performance?.prsUrl, educationSourceLabel: hasSansadEducation ? "Digital Sansad" : hasWikidataEducation ? "Wikidata" : performance?.prsEducation?.length ? "PRS India" : undefined, photoUrl: sansad?.photoUrl || wikipedia?.photoUrl, photoSourceUrl: sansad?.photoSourceUrl || wikipedia?.photoSourceUrl, partySymbolUrl, publicSourceLinks: wikipedia?.publicSourceLinks ?? [], socialAccounts: wikipedia?.socialAccounts ?? [], publicEmail: sansad?.publicEmail || wikipedia?.publicEmail, summary: wikipedia?.summary, education: hasSansadEducation ? sansad?.education ?? [] : hasWikidataEducation ? wikipedia?.education ?? [] : performance?.prsEducation ?? [], history: wikipedia?.history ?? [], family: wikipedia?.family ?? [], performance: performance?.performance, performancePeriod: performance?.performancePeriod, fetchedAt: wikipedia?.fetchedAt ?? new Date().toISOString() } : null;
     res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400").json({ data });
   } catch (error) { next(error); }
 });

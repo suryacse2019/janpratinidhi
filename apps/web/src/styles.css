@@ -83,6 +83,9 @@ html[data-theme="dark"] .external-lookup-status{background:#202521;border-color:
 .representative-overview-card{display:grid;gap:20px;padding:24px;background:#fff;border:1px solid #e6e3dc;border-radius:9px;box-shadow:0 5px 18px #241e1208}
 .representative-overview-identity{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:23px;padding-bottom:18px;border-bottom:1px solid #efede7}
 .representative-overview-identity>.representative-photo{width:116px;height:116px;font-size:29px}
+.representative-overview-portrait{display:grid;justify-items:center;gap:6px}
+.representative-overview-portrait>.representative-photo{width:116px;height:116px;font-size:29px}
+.representative-overview-portrait>a{display:inline-flex;align-items:center;gap:4px;color:#9f1420;font-size:11px;font-weight:700}
 .representative-overview-card .detail-identity h1{margin:10px 0 5px;font:800 31px/1.2 var(--serif);letter-spacing:-.5px;color:#202020}
 .representative-overview-card .detail-identity p{margin:0 0 12px;color:#696b63;font-size:16px}
 .representative-overview-about h2,.representative-overview-facts h2{margin:0 0 9px;color:#25261f;font:800 19px var(--serif)}
@@ -92,6 +95,11 @@ html[data-theme="dark"] .external-lookup-status{background:#202521;border-color:
 .report-issue-card h2{margin:0 0 6px;color:#79141b;font:800 18px/1.35 var(--serif)}
 .report-issue-card p{margin:0;color:#68645f;font-size:13px;line-height:1.6}
 .report-issue-card .primary-button{flex:none;background:#9f1420}
+.contact-details-content{display:grid;gap:8px}
+.contact-account-link{display:grid;grid-template-columns:22px 125px minmax(0,1fr);align-items:center;gap:9px;padding:11px 12px;border:1px solid #efede7;border-radius:6px;color:#6b211f}
+.contact-account-link>span{color:#696b63;font-size:13px}
+.contact-account-link>b{display:inline-flex;align-items:center;gap:5px;min-width:0;color:#9f1420;font-size:13px;overflow-wrap:anywhere}
+.contact-account-link:hover{background:#faf6f4;border-color:#e8c4c7}
 html[data-theme="dark"] .representative-overview-card{background:#202521;border-color:#39413b;color:#e1e3dc}
 html[data-theme="dark"] .representative-overview-identity{border-color:#39413b}
 html[data-theme="dark"] .representative-overview-card .detail-identity h1,html[data-theme="dark"] .representative-overview-about h2,html[data-theme="dark"] .representative-overview-facts h2{color:#f2f1eb}
@@ -99,4 +107,50 @@ html[data-theme="dark"] .representative-overview-card .detail-identity p,html[da
 html[data-theme="dark"] .report-issue-card{background:#2a2021;border-color:#654044}
 html[data-theme="dark"] .report-issue-card h2{color:#f0c5c7}
 html[data-theme="dark"] .report-issue-card p{color:#c5b7b7}
-@media(max-width:600px){.representative-overview-card{gap:16px;padding:17px}.representative-overview-identity{grid-template-columns:78px minmax(0,1fr);gap:14px;padding-bottom:15px}.representative-overview-identity>.representative-photo{width:78px;height:78px;font-size:20px}.representative-overview-card .detail-identity h1{font-size:23px}.representative-overview-card .detail-identity p{font-size:13px}.representative-overview-facts .detail-facts>div{grid-template-columns:105px minmax(0,1fr)}.report-issue-card{align-items:flex-start;flex-direction:column}.report-issue-card .primary-button{width:100%;justify-content:center}}
+html[data-theme="dark"] .contact-account-link{background:#252b26;border-color:#39413b;color:#f0c5c7}
+html[data-theme="dark"] .contact-account-link>span{color:#b6bab2}
+html[data-theme="dark"] .contact-account-link>b{color:#f0c5c7}
+html[data-theme="dark"] .contact-account-link:hover{background:#302425;border-color:#654044}
+@media(max-width:600px){.representative-overview-card{gap:16px;padding:17px}.representative-overview-identity{grid-template-columns:78px minmax(0,1fr);gap:14px;padding-bottom:15px}.representative-overview-identity>.representative-photo,.representative-overview-portrait>.representative-photo{width:78px;height:78px;font-size:20px}.representative-overview-card .detail-identity h1{font-size:23px}.representative-overview-card .detail-identity p{font-size:13px}.representative-overview-facts .detail-facts>div{grid-template-columns:105px minmax(0,1fr)}.report-issue-card{align-items:flex-start;flex-direction:column}.report-issue-card .primary-button{width:100%;justify-content:center}.contact-account-link{grid-template-columns:21px 94px minmax(0,1fr);gap:6px;padding:9px}.contact-account-link>span,.contact-account-link>b{font-size:11px}}
+
+/* Compact cards shared by the homepage and public politician directory. */
+.compact-representative-card{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:12px;min-height:0;padding:12px;position:relative}
+.compact-card-photo{display:block;width:60px;height:60px;align-self:start}
+.compact-card-photo .representative-photo{width:60px;height:60px;font-size:17px}
+.compact-card-body{min-width:0}
+.compact-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;min-width:0}
+.compact-card-heading h3{min-width:0;margin:0;font-size:14px;line-height:1.25}
+.compact-card-heading h3 a{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.compact-card-heading .result-office-tag{flex:none;padding:4px 6px;font-size:10px}
+.compact-card-facts{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin-top:7px}
+.compact-card-facts>span{min-width:0}
+.compact-card-facts small,.compact-card-facts b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compact-card-facts small{color:#898a82;font-size:9px}
+.compact-card-facts b{margin-top:2px;color:#373832;font-size:11px;font-weight:650}
+.compact-card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:7px;border-top:1px solid #efede7}
+.compact-card-party{display:flex;align-items:center;gap:6px;min-width:0}
+.compact-card-party .result-party-symbol{width:25px;height:25px;flex:none;border-radius:5px;font-size:8px}
+.compact-card-party .result-party-symbol img{padding:2px}
+.compact-card-party>b{overflow:hidden;color:#66675f;font-size:10px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.compact-share-button{display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;border:0;border-radius:4px;background:transparent;padding:5px;color:#9f1420;font-size:10px;font-weight:700}
+.compact-share-button:hover,.compact-share-button:focus-visible{background:#f5e7e8;outline-color:#9f1420}
+.compact-home-card{box-shadow:0 4px 14px #241e1208}
+.compact-home-card .compact-card-heading h3{font-size:13px}
+html[data-theme="dark"] .compact-card-facts b{color:#e1e3dc}
+html[data-theme="dark"] .compact-card-facts small,html[data-theme="dark"] .compact-card-party>b{color:#a7aaa2}
+html[data-theme="dark"] .compact-card-footer{border-color:#39413b}
+html[data-theme="dark"] .compact-share-button:hover,html[data-theme="dark"] .compact-share-button:focus-visible{background:#3a292b}
+@media(max-width:640px){.representative-results-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.compact-representative-card{grid-template-columns:47px minmax(0,1fr);gap:8px;padding:9px}.compact-card-photo,.compact-card-photo .representative-photo{width:47px;height:47px}.compact-card-photo .representative-photo{font-size:14px}.compact-card-heading{gap:3px}.compact-card-heading h3,.compact-home-card .compact-card-heading h3{font-size:11px}.compact-card-heading .result-office-tag{padding:3px 4px;font-size:8px}.compact-card-facts{gap:5px;margin-top:6px}.compact-card-facts small{font-size:8px}.compact-card-facts b{font-size:9px}.compact-card-footer{gap:4px;margin-top:6px;padding-top:5px}.compact-card-party{gap:4px}.compact-card-party .result-party-symbol{width:20px;height:20px;font-size:7px}.compact-card-party>b{font-size:8px}.compact-share-button{gap:3px;padding:4px;font-size:8px}.compact-share-button svg{width:12px;height:12px}}
+@media(max-width:370px){.representative-results-grid{grid-template-columns:1fr}}
+.compact-card-photo{position:relative;isolation:isolate;overflow:visible}
+.compact-card-photo::before{position:absolute;z-index:-1;content:"";width:64px;height:64px;top:-2px;left:-4px;border-radius:50%;background:#f0d7cb}
+.compact-card-photo .representative-photo{position:relative;width:56px;height:56px;margin:2px 0 0 3px;border:2px solid #fff}
+.compact-card-party{gap:7px}
+.compact-party-short{flex:none;color:#97111a;font-size:15px;font-weight:850;letter-spacing:-.5px}
+.compact-card-party>b{font-size:9px}
+.representative-results-grid>.compact-representative-card:nth-child(4n + 2) .compact-card-photo::before,.people-grid>.compact-home-card:nth-child(4n + 2) .compact-card-photo::before{background:#d7e8dd}
+.representative-results-grid>.compact-representative-card:nth-child(4n + 3) .compact-card-photo::before,.people-grid>.compact-home-card:nth-child(4n + 3) .compact-card-photo::before{background:#dce4f2}
+.representative-results-grid>.compact-representative-card:nth-child(4n) .compact-card-photo::before,.people-grid>.compact-home-card:nth-child(4n) .compact-card-photo::before{background:#eee3b9}
+html[data-theme="dark"] .compact-card-photo .representative-photo{border-color:#202521}
+html[data-theme="dark"] .compact-party-short{color:#f0a1a6}
+@media(max-width:640px){.compact-card-photo::before{width:51px;height:51px;top:-2px;left:-3px}.compact-card-photo .representative-photo{width:44px;height:44px;margin:1px 0 0 2px}.compact-card-party{gap:4px}.compact-party-short{font-size:12px}.compact-card-party>b{font-size:7px}}
