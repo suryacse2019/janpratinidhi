@@ -10,6 +10,10 @@ const userSchema = new Schema({
   gender: { type: String, enum: ["female", "male", "non_binary", "prefer_not_to_say"] },
   picture: String,
   profileComplete: { type: Boolean, default: false },
+  savedRepresentatives: {
+    mp: { type: Schema.Types.ObjectId, ref: "Representative" },
+    mla: { type: Schema.Types.ObjectId, ref: "Representative" },
+  },
   status: { type: String, enum: ["active", "inactive", "deleted"], default: "active", index: true },
   deletedAt: Date,
   lastLoginAt: { type: Date, required: true },

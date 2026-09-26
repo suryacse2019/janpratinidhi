@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { RepresentativeModel } from "../models/Representative.js";
 import { UserModel } from "../models/User.js";
+import { syncPartyCatalog, withPartyCatalog } from "../services/partyCatalog.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -54,7 +55,7 @@ adminRouter.delete("/users/:id", async (req, res, next) => {
 adminRouter.get("/representatives", async (_req, res, next) => {
   try {
     const data = await RepresentativeModel.find().sort({ updatedAt: -1 }).lean();
-    res.json({ data, total: data.length });
+    res.json({ data: await withPartyCatalog(data), total: data.length });
   } catch (error) { next(error); }
 });
 
@@ -65,7 +66,8 @@ adminRouter.post("/representatives", async (req, res, next) => {
       return res.status(400).json({ error: "Add at least one source before publishing a representative" });
     }
     const person = await RepresentativeModel.create(values);
-    res.status(201).json({ data: person });
+    await syncPartyCatalog();
+    res.status(201).json({ data: (await withPartyCatalog([person.toObject()]))[0] });
   } catch (error) {
     if (validationError(error)) return res.status(400).json({ error: error.message });
     next(error);
@@ -85,7 +87,8 @@ adminRouter.patch("/representatives/:id", async (req, res, next) => {
     }
     const person = await RepresentativeModel.findByIdAndUpdate(req.params.id, { $set: changes }, { new: true, runValidators: true });
     if (!person) return res.status(404).json({ error: "Representative not found" });
-    res.json({ data: person });
+    if (changes.party !== undefined || changes.partyShort !== undefined) await syncPartyCatalog();
+    res.json({ data: (await withPartyCatalog([person.toObject()]))[0] });
   } catch (error) {
     if (validationError(error)) return res.status(400).json({ error: error.message });
     next(error);
@@ -97,6 +100,7 @@ adminRouter.delete("/representatives/:id", async (req, res, next) => {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: "Invalid representative ID" });
     const person = await RepresentativeModel.findByIdAndDelete(req.params.id);
     if (!person) return res.status(404).json({ error: "Representative not found" });
+    await syncPartyCatalog();
     res.json({ success: true });
   } catch (error) { next(error); }
 });
