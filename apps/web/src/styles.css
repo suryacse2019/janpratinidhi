@@ -20,6 +20,9 @@
 .theme-toggle{width:36px;height:36px;flex:none;display:inline-grid;place-items:center;padding:0;border:1px solid #dedbd2;border-radius:7px;background:transparent;color:inherit;transition:background .18s,border-color .18s,color .18s}
 .theme-toggle:hover{background:#c0182410;border-color:#c0182460;color:#c01824}
 .theme-toggle:focus-visible{outline:3px solid #c0182455;outline-offset:2px}
+.detail-share-button{position:absolute;top:16px;right:16px;width:36px;height:36px;flex:none;display:inline-grid;place-items:center;padding:0;border:1px solid #dedbd2;border-radius:7px;background:transparent;color:inherit;cursor:pointer;transition:background .18s,border-color .18s,color .18s}
+.detail-share-button:hover{background:#c0182410;border-color:#c0182460;color:#c01824}
+.detail-share-button:focus-visible{outline:3px solid #c0182455;outline-offset:2px}
 .theme-header-actions,.dashboard-header-actions{display:flex;align-items:center;gap:12px}
 .login-gate-header{display:flex;align-items:center;justify-content:space-between}
 html[data-theme="dark"]{color-scheme:dark;--ink:#f2f1eb;--muted:#a7aaa2;--paper:#141715;--line:#343a35}
@@ -31,7 +34,7 @@ html[data-theme="dark"] .hero{background:radial-gradient(ellipse at 73% 53%,#292
 html[data-theme="dark"] .hero h1,html[data-theme="dark"] .dashboard-title h1,html[data-theme="dark"] .results-heading h2,html[data-theme="dark"] .directory-state h1,html[data-theme="dark"] .directory-state h3,html[data-theme="dark"] .representative-result-card h3,html[data-theme="dark"] .representative-detail-card h2,html[data-theme="dark"] .detail-identity h1,html[data-theme="dark"] .brand-name,html[data-theme="dark"] .hero-proof b{color:#f2f1eb}
 html[data-theme="dark"] .nav-links,html[data-theme="dark"] .nav-links a.active,html[data-theme="dark"] .login-button,html[data-theme="dark"] .dashboard-user,html[data-theme="dark"] .dashboard-user button,html[data-theme="dark"] .dashboard-search-box,html[data-theme="dark"] .dashboard-search-box input,html[data-theme="dark"] .dashboard-filters label,html[data-theme="dark"] .dashboard-filters select,html[data-theme="dark"] .result-card-facts dd,html[data-theme="dark"] .detail-facts dd,html[data-theme="dark"] .detail-identity p,html[data-theme="dark"] .detail-election-row b,html[data-theme="dark"] .detail-election-row p,html[data-theme="dark"] .detail-source-link b{color:#e1e3dc}
 html[data-theme="dark"] .hero-sub,html[data-theme="dark"] .hero-proof,html[data-theme="dark"] .eyebrow,html[data-theme="dark"] .dashboard-title p,html[data-theme="dark"] .result-party-name,html[data-theme="dark"] .profile-description p{color:#a7aaa2}
-html[data-theme="dark"] .login-button,html[data-theme="dark"] .theme-toggle,html[data-theme="dark"] .dashboard-user button,html[data-theme="dark"] .dashboard-search-box,html[data-theme="dark"] .dashboard-filters select,html[data-theme="dark"] .pagination-controls button{border-color:#424942}
+html[data-theme="dark"] .login-button,html[data-theme="dark"] .theme-toggle,html[data-theme="dark"] .detail-share-button,html[data-theme="dark"] .dashboard-user button,html[data-theme="dark"] .dashboard-search-box,html[data-theme="dark"] .dashboard-filters select,html[data-theme="dark"] .pagination-controls button{border-color:#424942}
 html[data-theme="dark"] .representative-search-form,html[data-theme="dark"] .representative-result-card,html[data-theme="dark"] .representative-detail-card,html[data-theme="dark"] .representative-profile-hero,html[data-theme="dark"] .directory-state{background:#202521;border-color:#39413b;color:#e1e3dc}
 html[data-theme="dark"] .dashboard-filters select,html[data-theme="dark"] .pagination-controls button,html[data-theme="dark"] .directory-state button{background:#252b26;color:#e1e3dc}
 html[data-theme="dark"] .dashboard-search-box input{background:transparent}
@@ -80,7 +83,7 @@ html[data-theme="dark"] .info-unavailable p{color:#b6bab2}
 html[data-theme="dark"] .external-profile-summary p{color:#b6bab2}
 html[data-theme="dark"] .external-lookup-status{background:#202521;border-color:#39413b;color:#a7aaa2}
 .representative-detail-sections{display:grid;grid-template-columns:minmax(0,1fr);gap:15px;margin-top:15px}
-.representative-overview-card{display:grid;gap:20px;padding:24px;background:#fff;border:1px solid #e6e3dc;border-radius:9px;box-shadow:0 5px 18px #241e1208}
+.representative-overview-card{position:relative;display:grid;gap:20px;padding:24px;background:#fff;border:1px solid #e6e3dc;border-radius:9px;box-shadow:0 5px 18px #241e1208}
 .representative-overview-identity{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:23px;padding-bottom:18px;border-bottom:1px solid #efede7}
 .representative-overview-identity>.representative-photo{width:116px;height:116px;font-size:29px}
 .representative-overview-portrait{display:grid;justify-items:center;gap:6px}
@@ -88,6 +91,8 @@ html[data-theme="dark"] .external-lookup-status{background:#202521;border-color:
 .representative-overview-portrait>a{display:inline-flex;align-items:center;gap:4px;color:#9f1420;font-size:11px;font-weight:700}
 .representative-overview-card .detail-identity h1{margin:10px 0 5px;font:800 31px/1.2 var(--serif);letter-spacing:-.5px;color:#202020}
 .representative-overview-card .detail-identity p{margin:0 0 12px;color:#696b63;font-size:16px}
+.representative-overview-card .detail-identity p.detail-party-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px}
+.profile-updated{color:#85877f;font-size:11px;font-weight:600;white-space:nowrap}
 .representative-overview-about h2,.representative-overview-facts h2{margin:0 0 9px;color:#25261f;font:800 19px var(--serif)}
 .representative-overview-about p{margin:0;color:#5f6159;font-size:14px;line-height:1.75;white-space:pre-line}
 .representative-overview-facts .detail-facts>div{grid-template-columns:minmax(125px,.45fr) minmax(0,1.55fr)}
@@ -104,6 +109,7 @@ html[data-theme="dark"] .representative-overview-card{background:#202521;border-
 html[data-theme="dark"] .representative-overview-identity{border-color:#39413b}
 html[data-theme="dark"] .representative-overview-card .detail-identity h1,html[data-theme="dark"] .representative-overview-about h2,html[data-theme="dark"] .representative-overview-facts h2{color:#f2f1eb}
 html[data-theme="dark"] .representative-overview-card .detail-identity p,html[data-theme="dark"] .representative-overview-about p{color:#b6bab2}
+html[data-theme="dark"] .profile-updated{color:#a7aaa2}
 html[data-theme="dark"] .report-issue-card{background:#2a2021;border-color:#654044}
 html[data-theme="dark"] .report-issue-card h2{color:#f0c5c7}
 html[data-theme="dark"] .report-issue-card p{color:#c5b7b7}

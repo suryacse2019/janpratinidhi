@@ -46,4 +46,5 @@ export interface Representative {
   elections: ElectionRecord[];
   sources: SourceRecord[];
   sample?: boolean;
+  updatedAt?: string;
 }

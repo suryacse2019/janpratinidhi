@@ -47,7 +47,7 @@ export function RepresentativeSearchCard({ person, variant = "directory", apiUrl
   </article>;
 }
 
-function ShareRepresentativeButton({ name, url }: { name: string; url: string }) {
+function ShareRepresentativeButton({ name, url, iconOnly = false }: { name: string; url: string; iconOnly?: boolean }) {
   const [label, setLabel] = useState("Share");
   const share = async () => {
     const fullUrl = `${window.location.origin}${url}`;
@@ -61,7 +61,7 @@ function ShareRepresentativeButton({ name, url }: { name: string; url: string })
       window.setTimeout(() => setLabel("Share"), 1800);
     } catch { window.prompt("Copy this profile link", fullUrl); }
   };
-  return <button className="compact-share-button" type="button" onClick={() => void share()} aria-label={`Share ${name} profile`}><Share2 size={14} /><span>{label}</span></button>;
+  return <button className={iconOnly ? "detail-share-button" : "compact-share-button"} type="button" onClick={() => void share()} aria-label={label === "Copied" ? "Profile link copied" : `Share ${name} profile`} title={label === "Copied" ? "Link copied" : `Share ${name} profile`}><Share2 size={16} />{!iconOnly && <span>{label}</span>}</button>;
 }
 
 function PartySymbol({ url, party, shortName }: { url?: string; party: string; shortName: string }) {
@@ -127,12 +127,33 @@ function ContactDetailsSection({ storedContact, profile, loading }: { storedCont
   </div> : <div className="info-unavailable"><p>{loading ? "Checking matched public profiles for published contact links…" : "No matching public email or social account was found."}</p>{profile?.wikipediaUrl && <a href={profile.wikipediaUrl} target="_blank" rel="noreferrer">Check Wikipedia profile <ExternalLink size={14} /></a>}<a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">Help us add this info <ExternalLink size={14} /></a></div>}</section>;
 }
 
+function formatRelativeUpdate(value: string, now: number): string {
+  const elapsed = Math.max(0, now - new Date(value).getTime());
+  if (!Number.isFinite(elapsed)) return "";
+  const minutes = Math.floor(elapsed / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hr${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} mo${months === 1 ? "" : "s"} ago`;
+  const years = Math.floor(months / 12);
+  return `${years} yr${years === 1 ? "" : "s"} ago`;
+}
+
 export function RepresentativeDetailsPage({ identifier, theme, onToggleTheme, apiUrl, normalizeRepresentative }: { identifier: string; theme: "light" | "dark"; onToggleTheme: () => void; apiUrl: string; normalizeRepresentative: (record: Record<string, unknown>) => Profile }) {
   const [person, setPerson] = useState<Profile | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [externalProfile, setExternalProfile] = useState<ExternalProfile | null>(null);
   const [externalLoading, setExternalLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   useEffect(() => {
     let active = true;
     fetch(`${apiUrl}/representatives/${encodeURIComponent(identifier)}`).then(async (response) => {
@@ -156,6 +177,7 @@ export function RepresentativeDetailsPage({ identifier, theme, onToggleTheme, ap
   const house = person?.house || (person?.office === "Lok Sabha MP" ? "Lok Sabha" : person?.office === "Rajya Sabha MP" ? "Rajya Sabha" : person?.office === "MLA" ? "Vidhan Sabha" : "");
   const termStart = person?.termStart || person?.since;
   const termText = termStart ? `${termStart}${person?.termEnd ? ` – ${person.termEnd}` : " – Present"}` : person?.termEnd;
+  const profileUpdated = person?.updatedAt ? formatRelativeUpdate(person.updatedAt, now) : "";
   const storedPerformance = readRecordSection(person?.recordData, "performance", "performanceDetails");
   const performance = hasRecordValue(storedPerformance) ? storedPerformance : externalProfile?.performance ? { ...externalProfile.performance, ...(externalProfile.performancePeriod ? { reportingPeriod: externalProfile.performancePeriod } : {}) } : undefined;
   const storedHistory = readRecordSection(person?.recordData, "history", "politicalHistory", "careerHistory");
@@ -214,9 +236,10 @@ export function RepresentativeDetailsPage({ identifier, theme, onToggleTheme, ap
       {loading ? <div className="directory-state" role="status"><span className="loading-spinner" />Loading representative record…</div> : error || !person ? <div className="directory-state error-state" role="alert"><h1>Record unavailable</h1><p>{error || "This representative is not in the published directory."}</p><a href="/politician" className="primary-button">Return to politicians <ArrowRight size={15} /></a></div> : <>
         <a className="dashboard-back-link detail-back" href="/politician">← Back to politicians</a>
         <section className="representative-overview-card">
+          <ShareRepresentativeButton name={person.name} url={`/representatives/${encodeURIComponent(person.slug || person.id)}`} iconOnly />
           <div className="representative-overview-identity">
             <div className="representative-overview-portrait"><RepresentativePhoto url={person.photoUrl || externalProfile?.photoUrl} initials={person.initials} name={person.name} />{!person.photoUrl && externalProfile?.photoSourceUrl && <a href={externalProfile.photoSourceUrl} target="_blank" rel="noreferrer">Photo source <ExternalLink size={12} /></a>}</div>
-            <div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p>{person.party}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl || externalProfile?.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div>
+            <div className="detail-identity"><span className="result-office-tag">{person.office}</span><h1>{person.name}</h1><p className="detail-party-line"><span>{person.party}</span>{profileUpdated && <span className="profile-updated" title={`Last updated ${new Date(person.updatedAt!).toLocaleString()}`}>Updated {profileUpdated}</span>}</p><div className="detail-symbol"><PartySymbol url={person.partySymbolUrl || externalProfile?.partySymbolUrl} party={person.party} shortName={person.partyShort} /></div></div>
           </div>
           <div className="representative-overview-about"><h2>About</h2><p>{person.description || person.summary || "A biography has not been added for this representative yet."}</p></div>
           <div className="representative-overview-facts"><h2>Details</h2><dl className="detail-facts">{person.state && <div><dt>State</dt><dd>{person.state}</dd></div>}{person.constituency && <div><dt>Constituency</dt><dd>{person.constituency}</dd></div>}{house && <div><dt>House</dt><dd>{house}</dd></div>}{termText && <div><dt>Term</dt><dd>{termText}</dd></div>}{person.electionYear && <div><dt>Election year</dt><dd>{person.electionYear}</dd></div>}</dl></div>
