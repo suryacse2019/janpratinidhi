@@ -1,3 +1,4 @@
+import { t, locale } from "../../i18n";
 import { SiteHeader } from "../../components/SiteHeader";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -111,7 +112,7 @@ export function RepresentativeSearchCard({
       <a
         className="compact-card-photo"
         href={profileUrl}
-        aria-label={`View ${person.name} details`}
+        aria-label={t("View {name} details", { name: person.name })}
       >
         <RepresentativePhoto
           url={cardMedia.photoUrl}
@@ -128,11 +129,11 @@ export function RepresentativeSearchCard({
         </div>
         <div className="compact-card-facts">
           <span>
-            <small>Constituency</small>
-            <b>{person.constituency || "Not listed"}</b>
+            <small>{t("Constituency")}</small>
+            <b>{person.constituency || t("Not listed")}</b>
           </span>
           <span>
-            <small>State</small>
+            <small>{t("State")}</small>
             <b>{person.state}</b>
           </span>
         </div>
@@ -188,11 +189,13 @@ function ShareRepresentativeButton({
       className={iconOnly ? "detail-share-button" : "compact-share-button"}
       type="button"
       onClick={() => void share()}
-      aria-label={label === "Copied" ? "Profile link copied" : `Share ${name} profile`}
-      title={label === "Copied" ? "Link copied" : `Share ${name} profile`}
+      aria-label={
+        label === "Copied" ? t("Profile link copied") : t("Share {name} profile", { name })
+      }
+      title={label === "Copied" ? t("Link copied") : t("Share {name} profile", { name })}
     >
       <Share2 size={16} />
-      {!iconOnly && <span>{label}</span>}
+      {!iconOnly && <span>{t(label)}</span>}
     </button>
   );
 }
@@ -208,9 +211,11 @@ function PartySymbol({
 }) {
   const [failed, setFailed] = useState(false);
   return url && !failed ? (
-    <img src={url} alt={`${party} symbol`} onError={() => setFailed(true)} />
+    <img src={url} alt={t("{party} symbol", { party })} onError={() => setFailed(true)} />
   ) : (
-    <span aria-label={`No symbol image available for ${party}`}>{shortName || "—"}</span>
+    <span aria-label={t("No symbol image available for {party}", { party })}>
+      {shortName || "—"}
+    </span>
   );
 }
 
@@ -228,7 +233,7 @@ function RepresentativePhoto({
     <img
       className="representative-photo"
       src={url}
-      alt={`${name} portrait`}
+      alt={t("{name} portrait", { name })}
       loading="lazy"
       onError={() => setFailed(true)}
     />
@@ -236,7 +241,7 @@ function RepresentativePhoto({
     <span
       className="representative-photo photo-fallback"
       role="img"
-      aria-label={`No photo available for ${name}`}
+      aria-label={t("No photo available for {name}", { name })}
     >
       {initials || "—"}
     </span>
@@ -254,7 +259,11 @@ export function RepresentativeAvatar({
 }) {
   const [failed, setFailed] = useState(false);
   return (
-    <span className={`avatar ${tone}`} role="img" aria-label={`${person.name} portrait`}>
+    <span
+      className={`avatar ${tone}`}
+      role="img"
+      aria-label={t("{name} portrait", { name: person.name })}
+    >
       {person.photoUrl && !failed ? (
         <img
           src={person.photoUrl}
@@ -327,7 +336,7 @@ function RecordValue({ value }: { value: unknown }) {
           ))}
       </dl>
     );
-  return <>{typeof value === "boolean" ? (value ? "Yes" : "No") : String(value)}</>;
+  return <>{typeof value === "boolean" ? (value ? t("Yes") : t("No")) : String(value)}</>;
 }
 
 function RepresentativeInfoSection({
@@ -346,13 +355,14 @@ function RepresentativeInfoSection({
   const available = hasRecordValue(value);
   return (
     <section className="representative-detail-card representative-info-section">
-      <h2>{title}</h2>
+      <h2>{t(title)}</h2>
       {available ? (
         <div className="representative-info-value">
           <RecordValue value={value} />
           {sourceUrl && (
             <a className="external-data-source" href={sourceUrl} target="_blank" rel="noreferrer">
-              Source: {sourceLabel} <ExternalLink size={13} />
+              {t("Source:") + " "}
+              {sourceLabel} <ExternalLink size={13} />
             </a>
           )}
         </div>
@@ -360,16 +370,20 @@ function RepresentativeInfoSection({
         <div className="info-unavailable">
           <p>
             {loading
-              ? "Searching external sources for a matching profile…"
-              : "Data not available from a matched public source."}
+              ? t("Searching external sources for a matching profile…")
+              : t("Data not available from a matched public source.")}
           </p>
           {sourceUrl && (
             <a href={sourceUrl} target="_blank" rel="noreferrer">
-              Check {sourceLabel} profile <ExternalLink size={14} />
+              {t("Check") + " "}
+              {sourceLabel}
+              {" " + t("profile") + " "}
+              <ExternalLink size={14} />
             </a>
           )}
           <a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">
-            Help us add this info <ExternalLink size={14} />
+            {t("Help us add this info") + " "}
+            <ExternalLink size={14} />
           </a>
         </div>
       )}
@@ -397,7 +411,7 @@ function ContactDetailsSection({
   const hasExternal = Boolean(emails.length || phones.length || profile?.socialAccounts?.length);
   return (
     <section className="representative-detail-card representative-info-section">
-      <h2>Contacts &amp; Social Media</h2>
+      <h2>{t("Contacts & Social Media")}</h2>
       {hasStored || hasExternal ? (
         <div className="contact-details-content">
           {hasStored && (
@@ -408,14 +422,14 @@ function ContactDetailsSection({
           {emails.map((email) => (
             <a className="contact-account-link" key={`email:${email}`} href={`mailto:${email}`}>
               <Mail size={17} />
-              <span>Email</span>
+              <span>{t("Email")}</span>
               <b>{email}</b>
             </a>
           ))}
           {phones.map((phone) => (
             <a className="contact-account-link" key={`phone:${phone}`} href={`tel:${phone}`}>
               <Phone size={17} />
-              <span>Phone</span>
+              <span>{t("Phone")}</span>
               <b>{phone}</b>
             </a>
           ))}
@@ -439,7 +453,8 @@ function ContactDetailsSection({
                 <Icon size={17} />
                 <span>{account.platform}</span>
                 <b>
-                  Open profile <ExternalLink size={13} />
+                  {t("Open profile") + " "}
+                  <ExternalLink size={13} />
                 </b>
               </a>
             );
@@ -451,7 +466,8 @@ function ContactDetailsSection({
               target="_blank"
               rel="noreferrer"
             >
-              Official parliamentary contact record: Digital Sansad <ExternalLink size={13} />
+              {t("Official parliamentary contact record: Digital Sansad") + " "}
+              <ExternalLink size={13} />
             </a>
           )}
           {profile?.wikidataUrl && (
@@ -461,7 +477,8 @@ function ContactDetailsSection({
               target="_blank"
               rel="noreferrer"
             >
-              Public account details: Wikidata <ExternalLink size={13} />
+              {t("Public account details: Wikidata") + " "}
+              <ExternalLink size={13} />
             </a>
           )}
         </div>
@@ -469,16 +486,18 @@ function ContactDetailsSection({
         <div className="info-unavailable">
           <p>
             {loading
-              ? "Checking matched public profiles for published contact links…"
-              : "No matching public email or social account was found."}
+              ? t("Checking matched public profiles for published contact links…")
+              : t("No matching public email or social account was found.")}
           </p>
           {profile?.wikipediaUrl && (
             <a href={profile.wikipediaUrl} target="_blank" rel="noreferrer">
-              Check Wikipedia profile <ExternalLink size={14} />
+              {t("Check Wikipedia profile") + " "}
+              <ExternalLink size={14} />
             </a>
           )}
           <a href={SUGGEST_INFO_URL} target="_blank" rel="noreferrer">
-            Help us add this info <ExternalLink size={14} />
+            {t("Help us add this info") + " "}
+            <ExternalLink size={14} />
           </a>
         </div>
       )}
@@ -489,17 +508,17 @@ function ContactDetailsSection({
 function formatRelativeUpdate(value: string, now: number): string {
   const elapsed = Math.max(0, now - new Date(value).getTime());
   if (!Number.isFinite(elapsed)) return "";
+  const relative = new Intl.RelativeTimeFormat(locale(), { numeric: "auto" });
   const minutes = Math.floor(elapsed / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min${minutes === 1 ? "" : "s"} ago`;
+  if (minutes < 1) return relative.format(0, "second");
+  if (minutes < 60) return relative.format(-minutes, "minute");
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hr${hours === 1 ? "" : "s"} ago`;
+  if (hours < 24) return relative.format(-hours, "hour");
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  if (days < 30) return relative.format(-days, "day");
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months} mo${months === 1 ? "" : "s"} ago`;
-  const years = Math.floor(months / 12);
-  return `${years} yr${years === 1 ? "" : "s"} ago`;
+  if (months < 12) return relative.format(-months, "month");
+  return relative.format(-Math.floor(months / 12), "year");
 }
 
 export function RepresentativeDetailsPage({
@@ -575,7 +594,7 @@ export function RepresentativeDetailsPage({
           : "");
   const termStart = person?.termStart || person?.since;
   const termText = termStart
-    ? `${termStart}${person?.termEnd ? ` – ${person.termEnd}` : " – Present"}`
+    ? `${termStart}${person?.termEnd ? ` – ${person.termEnd}` : t(" – Present")}`
     : person?.termEnd;
   const profileUpdated = person?.updatedAt ? formatRelativeUpdate(person.updatedAt, now) : "";
   const storedPerformance = readRecordSection(
@@ -776,20 +795,21 @@ export function RepresentativeDetailsPage({
         {loading ? (
           <div className="directory-state" role="status">
             <span className="loading-spinner" />
-            Loading representative record…
+            {t("Loading representative record…")}
           </div>
         ) : error || !person ? (
           <div className="directory-state error-state" role="alert">
-            <h1>Record unavailable</h1>
-            <p>{error || "This representative is not in the published directory."}</p>
+            <h1>{t("Record unavailable")}</h1>
+            <p>{error || t("This representative is not in the published directory.")}</p>
             <a href="/politician" className="primary-button">
-              Return to politicians <ArrowRight size={15} />
+              {t("Return to politicians") + " "}
+              <ArrowRight size={15} />
             </a>
           </div>
         ) : (
           <>
             <a className="dashboard-back-link detail-back" href="/politician">
-              ← Back to politicians
+              {t("← Back to politicians")}
             </a>
             <section className="representative-overview-card">
               <ShareRepresentativeButton
@@ -806,21 +826,25 @@ export function RepresentativeDetailsPage({
                   />
                   {!person.photoUrl && externalProfile?.photoSourceUrl && (
                     <a href={externalProfile.photoSourceUrl} target="_blank" rel="noreferrer">
-                      Photo source <ExternalLink size={12} />
+                      {t("Photo source") + " "}
+                      <ExternalLink size={12} />
                     </a>
                   )}
                 </div>
                 <div className="detail-identity">
-                  <span className="result-office-tag">{person.office}</span>
+                  <span className="result-office-tag">{t(person.office)}</span>
                   <h1>{person.name}</h1>
                   <p className="detail-party-line">
                     <span>{person.party}</span>
                     {profileUpdated && (
                       <span
                         className="profile-updated"
-                        title={`Last updated ${new Date(person.updatedAt!).toLocaleString()}`}
+                        title={t("Last updated {date}", {
+                          date: new Date(person.updatedAt!).toLocaleString(locale()),
+                        })}
                       >
-                        Updated {profileUpdated}
+                        {t("Updated") + " "}
+                        {profileUpdated}
                       </span>
                     )}
                   </p>
@@ -834,50 +858,50 @@ export function RepresentativeDetailsPage({
                 </div>
               </div>
               <div className="representative-overview-about">
-                <h2>About</h2>
+                <h2>{t("About")}</h2>
                 <p>
                   {person.description ||
                     person.summary ||
-                    "A biography has not been added for this representative yet."}
+                    t("A biography has not been added for this representative yet.")}
                 </p>
               </div>
               <div className="representative-overview-facts">
-                <h2>Details</h2>
+                <h2>{t("Details")}</h2>
                 <dl className="detail-facts">
                   {person.state && (
                     <div>
-                      <dt>State</dt>
+                      <dt>{t("State")}</dt>
                       <dd>{person.state}</dd>
                     </div>
                   )}
                   {person.constituency && (
                     <div>
-                      <dt>Constituency</dt>
+                      <dt>{t("Constituency")}</dt>
                       <dd>{person.constituency}</dd>
                     </div>
                   )}
                   {house && (
                     <div>
-                      <dt>House</dt>
-                      <dd>{house}</dd>
+                      <dt>{t("House")}</dt>
+                      <dd>{t(house)}</dd>
                     </div>
                   )}
                   {termText && (
                     <div>
-                      <dt>Term</dt>
+                      <dt>{t("Term")}</dt>
                       <dd>{termText}</dd>
                     </div>
                   )}
                   {person.electionYear && (
                     <div>
-                      <dt>Election year</dt>
+                      <dt>{t("Election year")}</dt>
                       <dd>{person.electionYear}</dd>
                     </div>
                   )}
                 </dl>
               </div>
             </section>
-            <nav className="representative-detail-tabs" aria-label="Politician details">
+            <nav className="representative-detail-tabs" aria-label={t("Politician details")}>
               {detailTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -888,7 +912,7 @@ export function RepresentativeDetailsPage({
                       ?.scrollIntoView({ behavior: "smooth", block: "start" })
                   }
                 >
-                  {tab.label}
+                  {t(tab.label)}
                 </button>
               ))}
             </nav>
@@ -897,16 +921,17 @@ export function RepresentativeDetailsPage({
                 id="detail-election-history"
                 className="representative-detail-card representative-detail-anchor"
               >
-                <h2>Election history</h2>
+                <h2>{t("Election history")}</h2>
                 {electionHistory.length ? (
                   <>
                     <p className="external-sources-note">
-                      Recorded votes by election. Each bar uses the same vote-count scale; vote
-                      share and turnout are shown only when a verified denominator is available.
+                      {t(
+                        "Recorded votes by election. Each bar uses the same vote-count scale; vote share and turnout are shown only when a verified denominator is available.",
+                      )}
                     </p>
                     <div
                       className="election-vote-chart"
-                      aria-label="Votes received in recorded elections"
+                      aria-label={t("Votes received in recorded elections")}
                     >
                       {electionHistory.map((election) => (
                         <div
@@ -917,7 +942,10 @@ export function RepresentativeDetailsPage({
                             <b>
                               {election.year} · {election.electionType}
                             </b>
-                            <span>{election.votes.toLocaleString("en-IN")} votes</span>
+                            <span>
+                              {election.votes.toLocaleString(locale())}
+                              {" " + t("votes")}
+                            </span>
                           </div>
                           <div className="election-vote-track" aria-hidden="true">
                             <span
@@ -930,7 +958,7 @@ export function RepresentativeDetailsPage({
                             {election.result} · {election.party} · {election.constituency},{" "}
                             {election.state}
                             {typeof election.margin === "number"
-                              ? ` · margin ${election.margin.toLocaleString("en-IN")}`
+                              ? ` · margin ${election.margin.toLocaleString(locale())}`
                               : ""}
                           </small>
                           {election.source?.url && (
@@ -940,7 +968,8 @@ export function RepresentativeDetailsPage({
                               rel="noreferrer"
                               className="election-source-link"
                             >
-                              Source: {election.source.publisher || election.source.title}{" "}
+                              {t("Source:") + " "}
+                              {election.source.publisher || election.source.title}{" "}
                               <ExternalLink size={12} />
                             </a>
                           )}
@@ -950,7 +979,7 @@ export function RepresentativeDetailsPage({
                   </>
                 ) : (
                   <div className="info-unavailable">
-                    <p>No verified election results are recorded for this profile yet.</p>
+                    <p>{t("No verified election results are recorded for this profile yet.")}</p>
                   </div>
                 )}
               </section>
@@ -958,7 +987,7 @@ export function RepresentativeDetailsPage({
                 id="detail-timeline"
                 className="representative-detail-card representative-detail-anchor"
               >
-                <h2>Timeline</h2>
+                <h2>{t("Timeline")}</h2>
                 {timelineItems.length ? (
                   <ol className="representative-timeline">
                     {timelineItems.map((item, index) => (
@@ -969,7 +998,8 @@ export function RepresentativeDetailsPage({
                           {item.detail && <p>{item.detail}</p>}
                           {item.source?.url && (
                             <a href={item.source.url} target="_blank" rel="noreferrer">
-                              Source: {item.source.publisher || item.source.title}
+                              {t("Source:") + " "}
+                              {item.source.publisher || item.source.title}
                             </a>
                           )}
                         </div>
@@ -978,13 +1008,13 @@ export function RepresentativeDetailsPage({
                   </ol>
                 ) : (
                   <div className="info-unavailable">
-                    <p>No dated election or parliamentary milestones are available.</p>
+                    <p>{t("No dated election or parliamentary milestones are available.")}</p>
                   </div>
                 )}
               </section>
               <div id="detail-biography" className="representative-detail-anchor">
                 <RepresentativeInfoSection
-                  title="External biography"
+                  title={t("External biography")}
                   value={externalProfile?.summary}
                   sourceUrl={externalProfile?.wikipediaUrl}
                   sourceLabel="Wikipedia · CC BY-SA 4.0"
@@ -993,7 +1023,7 @@ export function RepresentativeDetailsPage({
               </div>
               <div id="detail-performance" className="representative-detail-anchor">
                 <RepresentativeInfoSection
-                  title="Performance"
+                  title={t("Performance")}
                   value={performance}
                   sourceUrl={externalProfile?.prsUrl}
                   sourceLabel="PRS India · CC BY 4.0"
@@ -1001,7 +1031,7 @@ export function RepresentativeDetailsPage({
               </div>
               <div id="detail-history" className="representative-detail-anchor">
                 <RepresentativeInfoSection
-                  title="History"
+                  title={t("History")}
                   value={history}
                   sourceUrl={externalProfile?.sansadUrl || externalProfile?.wikidataUrl}
                   sourceLabel={externalProfile?.sansadUrl ? "Digital Sansad" : "Wikidata"}
@@ -1009,7 +1039,7 @@ export function RepresentativeDetailsPage({
               </div>
               <div id="detail-education" className="representative-detail-anchor">
                 <RepresentativeInfoSection
-                  title="Education"
+                  title={t("Education")}
                   value={education}
                   sourceUrl={externalProfile?.educationSourceUrl}
                   sourceLabel={externalProfile?.educationSourceLabel ?? "Wikidata"}
@@ -1017,7 +1047,7 @@ export function RepresentativeDetailsPage({
               </div>
               <div id="detail-family" className="representative-detail-anchor">
                 <RepresentativeInfoSection
-                  title="Family Details"
+                  title={t("Family Details")}
                   value={family}
                   sourceUrl={externalProfile?.wikidataUrl}
                 />
@@ -1033,12 +1063,13 @@ export function RepresentativeDetailsPage({
                 id="detail-external-sources"
                 className="representative-detail-card representative-detail-anchor"
               >
-                <h2>External public sources</h2>
+                <h2>{t("External public sources")}</h2>
                 {externalSources.length > 0 ? (
                   <>
                     <p className="external-sources-note">
-                      Links discovered on matched public profiles. Review each source for the latest
-                      information.
+                      {t(
+                        "Links discovered on matched public profiles. Review each source for the latest information.",
+                      )}
                     </p>
                     {externalSources.map((source) => (
                       <a
@@ -1050,8 +1081,8 @@ export function RepresentativeDetailsPage({
                       >
                         <FileText size={16} />
                         <span>
-                          <b>{source.title}</b>
-                          <small>{source.publisher}</small>
+                          <b>{t(source.title)}</b>
+                          <small>{t(source.publisher)}</small>
                         </span>
                         <ExternalLink size={14} />
                       </a>
@@ -1059,7 +1090,7 @@ export function RepresentativeDetailsPage({
                   </>
                 ) : (
                   <div className="info-unavailable">
-                    <p>No matched external source links are available.</p>
+                    <p>{t("No matched external source links are available.")}</p>
                   </div>
                 )}
               </section>
@@ -1067,10 +1098,11 @@ export function RepresentativeDetailsPage({
                 id="detail-election-research"
                 className="representative-detail-card representative-detail-anchor"
               >
-                <h2>Election research portals</h2>
+                <h2>{t("Election research portals")}</h2>
                 <p className="external-sources-note">
-                  Open these portals to check election records and candidate photos. MyNeta records
-                  are archived candidate affidavits and may not reflect current status.
+                  {t(
+                    "Open these portals to check election records and candidate photos. MyNeta records are archived candidate affidavits and may not reflect current status.",
+                  )}
                 </p>
                 {electionResearchLinks.map((source) => (
                   <a
@@ -1082,8 +1114,8 @@ export function RepresentativeDetailsPage({
                   >
                     <FileText size={16} />
                     <span>
-                      <b>{source.title}</b>
-                      <small>{source.publisher}</small>
+                      <b>{t(source.title)}</b>
+                      <small>{t(source.publisher)}</small>
                     </span>
                     <ExternalLink size={14} />
                   </a>
@@ -1092,14 +1124,16 @@ export function RepresentativeDetailsPage({
 
               <section className="representative-detail-card report-issue-card">
                 <div>
-                  <h2>Found an issue with this politician’s information?</h2>
+                  <h2>{t("Found an issue with this politician’s information?")}</h2>
                   <p>
-                    Report missing or incorrect details. Add a source link when you can so the
-                    record can be checked.
+                    {t(
+                      "Report missing or incorrect details. Add a source link when you can so the record can be checked.",
+                    )}
                   </p>
                 </div>
                 <a className="primary-button" href={issueUrl} target="_blank" rel="noreferrer">
-                  Report an issue on GitHub <ArrowUpRight size={15} />
+                  {t("Report an issue on GitHub") + " "}
+                  <ArrowUpRight size={15} />
                 </a>
               </section>
             </div>

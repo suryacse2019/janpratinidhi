@@ -1,3 +1,4 @@
+import { t, locale } from "../../i18n";
 import React from "react";
 import { SiteHeader } from "../../components/SiteHeader";
 import {
@@ -75,17 +76,13 @@ export function HomePage({
   return (
     <div className="site-shell">
       <SiteHeader>
-        {user && (
-          <a className="login-button dashboard-header-button" href="/dashboard">
-            Dashboard <ArrowRight size={14} />
-          </a>
-        )}
+       
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
         {user ? (
           <ProfileMenu user={user} onSignOut={signOut} />
         ) : (
           <button className="login-button" onClick={signIn} disabled={authBusy}>
-            {authBusy ? "Signing in…" : "Sign In"} <ArrowRight size={15} />
+            {authBusy ? t("Signing in…") : t("Sign In")} <ArrowRight size={15} />
           </button>
         )}
       </SiteHeader>
@@ -97,20 +94,23 @@ export function HomePage({
               <span className="eyebrow-icon">
                 <Sparkles size={13} />
               </span>{" "}
-              YOUR PUBLIC REPRESENTATIVE DIRECTORY
+              {t("YOUR PUBLIC REPRESENTATIVE DIRECTORY")}
             </div>
             <h1>
-              Know the people
+              {t("Know the people")}
               <br />
-              who <em>represent you.</em>
+              {t("who") + " "}
+              <em>{t("represent you.")}</em>
             </h1>
             <p className="hero-sub">
-              A clearer view of India's elected representatives, their public records, and the
-              sources behind every detail.
+              {t(
+                "A clearer view of India's elected representatives, their public records, and the sources behind every detail.",
+              )}
             </p>
             <div className="hero-actions">
               <a href="/politician" className="primary-button">
-                Explore politicians <ArrowRight size={16} />
+                {t("Explore politicians") + " "}
+                <ArrowRight size={16} />
               </a>
               <a
                 href="https://github.com/suryacse2019/janpratinidhi"
@@ -121,6 +121,13 @@ export function HomePage({
                 <Github size={16} /> GitHub
               </a>
             </div>
+            <a
+              href="/search-map"
+              className="text-button"
+              style={{ marginTop: 18, display: "inline-flex" }}
+            >
+              {t("Explore the India map")} <ArrowRight size={16} />
+            </a>
             <div className="hero-proof">
               <div className="proof-avatars">
                 <span>IN</span>
@@ -128,17 +135,20 @@ export function HomePage({
                 <span>OP</span>
               </div>
               <span>
-                Built on public records.
+                {t("Built on public records.")}
                 <br />
-                <b>Open for everyone.</b>
+                <b>{t("Open for everyone.")}</b>
               </span>
             </div>
           </div>
-          <div className="hero-art" aria-label="Illustration of the Indian Parliament">
+          <div className="hero-art" aria-label={t("Illustration of the Indian Parliament")}>
             <div className="art-orbit orbit-one" />
             <div className="art-orbit orbit-two" />
             <div className="art-caption">
-              <span className="caption-line" /> PEOPLE'S HOUSE <span>·</span> NEW DELHI
+              <span className="caption-line" />
+              {" " + t("PEOPLE'S HOUSE") + " "}
+              <span>·</span>
+              {" " + t("NEW DELHI")}
             </div>
             <div className="parliament-card">
               <div className="building-sun" />
@@ -168,8 +178,8 @@ export function HomePage({
                 <FileText size={15} />
               </span>
               <span>
-                <b>Every fact has a source</b>
-                <small>Read the original record ↗</small>
+                <b>{t("Every fact has a source")}</b>
+                <small>{t("Read the original record ↗")}</small>
               </span>
             </div>
             <div className="floating-note note-record">
@@ -177,24 +187,25 @@ export function HomePage({
                 <Check size={15} />
               </span>
               <span>
-                <b>Verified public records</b>
-                <small>With dates and context</small>
+                <b>{t("Verified public records")}</b>
+                <small>{t("With dates and context")}</small>
               </span>
             </div>
             <div className="art-footnote">
-              A public resource, shaped by the public <span>✳</span>
+              {t("A public resource, shaped by the public") + " "}
+              <span>✳</span>
             </div>
           </div>
         </section>
 
-        <section className="stats-band" aria-label="Directory overview">
+        <section className="stats-band" aria-label={t("Directory overview")}>
           <div className="stat">
             <span className="stat-icon orange">
               <Landmark size={17} />
             </span>
             <span>
-              <b>{profileTotal.toLocaleString("en-IN")}</b>
-              <small>Published profiles</small>
+              <b>{profileTotal.toLocaleString(locale())}</b>
+              <small>{t("Published profiles")}</small>
             </span>
           </div>
           <div className="stat">
@@ -203,7 +214,7 @@ export function HomePage({
             </span>
             <span>
               <b>3</b>
-              <small>Types of office</small>
+              <small>{t("Types of office")}</small>
             </span>
           </div>
           <div className="stat">
@@ -211,12 +222,14 @@ export function HomePage({
               <ShieldCheck size={17} />
             </span>
             <span>
-              <b>Source first</b>
-              <small>Every record traceable</small>
+              <b>{t("Source first")}</b>
+              <small>{t("Every record traceable")}</small>
             </span>
           </div>
           <div className="stats-note">
-            Published public records<span> · </span>National coverage is in progress
+            {t("Published public records")}
+            <span> · </span>
+            {t("National coverage is in progress")}
           </div>
         </section>
 
@@ -224,14 +237,17 @@ export function HomePage({
           <div className="section-heading">
             <div>
               <div className="eyebrow small-eyebrow">
-                THE DIRECTORY <span className="heading-rule" />
+                {t("THE DIRECTORY") + " "}
+                <span className="heading-rule" />
               </div>
               <h2>
-                Meet your representatives<span>.</span>
+                {t("Meet your representatives")}
+                <span>.</span>
               </h2>
               <p>
-                Browse MPs and MLAs by name, constituency, state, or party. Each profile links to
-                its available public sources.
+                {t(
+                  "Browse MPs and MLAs by name, constituency, state, or party. Each profile links to its available public sources.",
+                )}
               </p>
             </div>
           </div>
@@ -247,10 +263,13 @@ export function HomePage({
           </div>
           <div className="directory-bottom">
             <span>
-              Explore {profileTotal.toLocaleString("en-IN")} published MP and MLA profiles.
+              {t("Explore") + " "}
+              {profileTotal.toLocaleString(locale())}
+              {" " + t("published MP and MLA profiles.")}
             </span>
             <a className="primary-button" href="/politician">
-              Explore politician <ArrowRight size={15} />
+              {t("Explore politician") + " "}
+              <ArrowRight size={15} />
             </a>
           </div>
         </section>
@@ -258,16 +277,18 @@ export function HomePage({
         <section className="trust-section" id="how">
           <div className="trust-copy">
             <div className="eyebrow small-eyebrow">
-              BUILT FOR TRUST <span className="heading-rule" />
+              {t("BUILT FOR TRUST") + " "}
+              <span className="heading-rule" />
             </div>
             <h2>
-              Facts you can
+              {t("Facts you can")}
               <br />
-              <em>follow through.</em>
+              <em>{t("follow through.")}</em>
             </h2>
             <p>
-              Public information should be easy to find and simple to verify. We connect each
-              profile to the original public record, so you can check the context for yourself.
+              {t(
+                "Public information should be easy to find and simple to verify. We connect each profile to the original public record, so you can check the context for yourself.",
+              )}
             </p>
             <a
               href="https://www.eci.gov.in/affidavit-portal"
@@ -275,27 +296,28 @@ export function HomePage({
               rel="noreferrer"
               className="source-link"
             >
-              Explore ECI affidavit portal <ExternalLink size={14} />
+              {t("Explore ECI affidavit portal") + " "}
+              <ExternalLink size={14} />
             </a>
           </div>
           <div className="trust-steps">
             <TrustStep
               number="01"
               icon={<Search size={18} />}
-              title="Find a person"
-              body="Search by name, state, constituency, party, or office."
+              title={t("Find a person")}
+              body={t("Search by name, state, constituency, party, or office.")}
             />
             <TrustStep
               number="02"
               icon={<FileText size={18} />}
-              title="Check the record"
-              body="See public education details, terms, and election results."
+              title={t("Check the record")}
+              body={t("See public education details, terms, and election results.")}
             />
             <TrustStep
               number="03"
               icon={<ExternalLink size={18} />}
-              title="Go to the source"
-              body="Open the original portal or document behind a claim."
+              title={t("Go to the source")}
+              body={t("Open the original portal or document behind a claim.")}
             />
           </div>
         </section>
@@ -304,15 +326,16 @@ export function HomePage({
             <Landmark size={20} />
           </span>
           <div>
-            <h3>Democracy works better when it's easier to understand.</h3>
-            <p>Help make public information clearer, one well-sourced record at a time.</p>
+            <h3>{t("Democracy works better when it's easier to understand.")}</h3>
+            <p>{t("Help make public information clearer, one well-sourced record at a time.")}</p>
           </div>
           <button
             onClick={() =>
               setNotice("Thanks for your interest. The contributor guide will be available soon.")
             }
           >
-            Get involved <ArrowRight size={15} />
+            {t("Get involved") + " "}
+            <ArrowRight size={15} />
           </button>
           <div className="cta-deco">✳</div>
         </section>
@@ -321,34 +344,40 @@ export function HomePage({
       <footer className="community-footer">
         <div className="footer-brand-lockup">
           <a className="footer-wordmark" href="#home">
-            <span>Jan</span> <span>Pratinidhi</span>
+            <span>{t("Jan")}</span> <span>{t("Pratinidhi")}</span>
           </a>
           <p>
-            Open source <i>·</i> Built by community
+            {t("Open source") + " "}
+            <i>·</i>
+            {" " + t("Built by community")}
           </p>
         </div>
-        <nav className="footer-menu" aria-label="Footer navigation">
-          <a href="#about">About</a>
+        <nav className="footer-menu" aria-label={t("Footer navigation")}>
+          <a href="#about">{t("About")}</a>
           <a href="https://github.com/suryacse2019/janpratinidhi" target="_blank" rel="noreferrer">
             GitHub <ArrowUpRight size={13} />
           </a>
-          <a href="/politician">Politicians</a>
+          <a href="/politician">{t("Politicians")}</a>
           <a
             href="https://github.com/suryacse2019/janpratinidhi/issues/new"
             target="_blank"
             rel="noreferrer"
           >
-            Contributing <ArrowUpRight size={13} />
+            {t("Contributing") + " "}
+            <ArrowUpRight size={13} />
           </a>
         </nav>
-        <small>© {new Date().getFullYear()} Jan Pratinidhi community</small>
+        <small>
+          © {new Date().getFullYear()}
+          {" " + t("Jan Pratinidhi community")}
+        </small>
       </footer>
 
       {notice && (
         <div className="toast">
           <Check size={16} />
-          {notice}
-          <button onClick={() => setNotice("")} aria-label="Dismiss">
+          {t(notice)}
+          <button onClick={() => setNotice("")} aria-label={t("Dismiss")}>
             <X size={15} />
           </button>
         </div>
@@ -396,7 +425,7 @@ function PersonCard({
         <button
           className={saved ? "save-button is-saved" : "save-button"}
           onClick={onSave}
-          title={saved ? "Remove saved profile" : "Save profile"}
+          title={saved ? t("Remove saved profile") : t("Save profile")}
         >
           <Bookmark size={17} fill={saved ? "currentColor" : "none"} />
         </button>
@@ -421,9 +450,11 @@ function PersonCard({
           <span className="verified-dot">
             <Check size={9} />
           </span>{" "}
-          Source linked
+          {t("Source linked")}
         </span>
-        <span>{person.since ? `Since ${person.since}` : "Public profile"}</span>
+        <span>
+          {person.since ? t("Since {year}", { year: person.since }) : t("Public profile")}
+        </span>
       </div>
     </article>
   );
@@ -445,8 +476,8 @@ function TrustStep({
       <span className="step-number">{number}</span>
       <span className="step-icon">{icon}</span>
       <div>
-        <h3>{title}</h3>
-        <p>{body}</p>
+        <h3>{t(title)}</h3>
+        <p>{t(body)}</p>
       </div>
       <ArrowUpRight size={15} className="step-arrow" />
     </div>
@@ -477,7 +508,7 @@ function ProfileModal({
         aria-modal="true"
         aria-labelledby="profile-title"
       >
-        <button className="modal-close" onClick={onClose} aria-label="Close profile">
+        <button className="modal-close" onClick={onClose} aria-label={t("Close profile")}>
           <X size={18} />
         </button>
         <div className="modal-overline">
@@ -496,35 +527,38 @@ function ProfileModal({
         </div>
         {person.sample && (
           <div className="sample-warning">
-            <CircleHelp size={15} /> Demonstration profile — details below are fictional and must
-            not be treated as real records.
+            <CircleHelp size={15} />
+            {" " +
+              t(
+                "Demonstration profile — details below are fictional and must not be treated as real records.",
+              )}
           </div>
         )}
         <p className="modal-summary">{person.summary}</p>
         <div className="modal-info-grid">
           <div>
-            <small>OFFICE</small>
+            <small>{t("OFFICE")}</small>
             <b>{person.office}</b>
           </div>
           <div>
-            <small>REPRESENTING</small>
+            <small>{t("REPRESENTING")}</small>
             <b>
               {person.constituency}, {person.state}
             </b>
           </div>
           <div>
-            <small>PARTY</small>
+            <small>{t("PARTY")}</small>
             <b>{person.party}</b>
           </div>
           <div>
-            <small>EDUCATION</small>
+            <small>{t("EDUCATION")}</small>
             <b>{person.education}</b>
           </div>
         </div>
         <div className="modal-section-title">
-          <h3>Election history</h3>
+          <h3>{t("Election history")}</h3>
           <span>
-            {person.elections.length} {person.elections.length === 1 ? "record" : "records"}
+            {person.elections.length} {person.elections.length === 1 ? t("record") : t("records")}
           </span>
         </div>
         {person.elections.length ? (
@@ -536,8 +570,9 @@ function ProfileModal({
                   {election.electionType} · {election.constituency}
                 </b>
                 <small>
-                  {election.party} · {election.votes.toLocaleString("en-IN")} votes
-                  {election.margin ? ` · won by ${election.margin.toLocaleString("en-IN")}` : ""}
+                  {election.party} · {election.votes.toLocaleString(locale())}
+                  {" " + t("votes")}
+                  {election.margin ? ` · won by ${election.margin.toLocaleString(locale())}` : ""}
                 </small>
               </div>
               <span className="won-label">{election.result}</span>
@@ -545,12 +580,15 @@ function ProfileModal({
           ))
         ) : (
           <div className="no-election">
-            Election figures are not shown for this office type in this sample.
+            {t("Election figures are not shown for this office type in this sample.")}
           </div>
         )}
         <div className="modal-section-title sources-title">
-          <h3>Sources</h3>
-          <span>Checked {person.sources[0]?.accessedAt ?? "—"}</span>
+          <h3>{t("Sources")}</h3>
+          <span>
+            {t("Checked") + " "}
+            {person.sources[0]?.accessedAt ?? "—"}
+          </span>
         </div>
         {person.sources.map((source, i) => (
           <a className="modal-source" key={i} href={source.url} target="_blank" rel="noreferrer">
@@ -559,7 +597,10 @@ function ProfileModal({
             </span>
             <span>
               <b>{source.title}</b>
-              <small>{source.publisher} · opens official portal</small>
+              <small>
+                {source.publisher}
+                {" " + t("· opens official portal")}
+              </small>
             </span>
             <ExternalLink size={15} />
           </a>
@@ -567,10 +608,10 @@ function ProfileModal({
         <div className="modal-actions">
           <button className="primary-button" onClick={onSave}>
             <Bookmark size={15} fill={saved ? "currentColor" : "none"} />
-            {saved ? "Saved" : "Save profile"}
+            {saved ? t("Saved") : t("Save profile")}
           </button>
           <button className="modal-done" onClick={onClose}>
-            Done
+            {t("Done")}
           </button>
         </div>
       </section>

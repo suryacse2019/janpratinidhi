@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LayoutDashboard, LogOut, Users } from "lucide-react";
 
@@ -47,15 +48,15 @@ export function ProfileMenu({ user, onSignOut }: { user: User; onSignOut: () => 
           </div>
           <a href="/dashboard" role="menuitem" onClick={() => setOpen(false)}>
             <LayoutDashboard size={15} />
-            Dashboard
+            {t("Dashboard")}
           </a>
           <a href="/politician" role="menuitem" onClick={() => setOpen(false)}>
             <Users size={15} />
-            Politicians
+            {t("Politicians")}
           </a>
           <button type="button" role="menuitem" onClick={onSignOut}>
             <LogOut size={15} />
-            Log out
+            {t("Log out")}
           </button>
         </div>
       )}

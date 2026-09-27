@@ -1,3 +1,5 @@
+import { t, useLanguage } from "./i18n";
+import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, Check, Landmark, LogOut, ShieldCheck, X } from "lucide-react";
 import { API_URL, GOOGLE_CLIENT_ID } from "./shared/config";
@@ -55,6 +57,7 @@ async function adminRequest(path: string, init: RequestInit = {}) {
 }
 
 function App() {
+  useLanguage();
   const route = resolveRoute(window.location.pathname);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profileTotal, setProfileTotal] = useState(0);
@@ -146,7 +149,7 @@ function App() {
 
   useEffect(() => {
     let active = true;
-    if (route.name === "admin" || route.name === "directory")
+    if (route.name === "admin" || route.name === "directory" || route.name === "map")
       return () => {
         active = false;
       };
@@ -242,7 +245,7 @@ function App() {
               setUser(body.user);
               sessionStorage.setItem("janpratinidhi-user", JSON.stringify(body.user));
               sessionStorage.setItem("janpratinidhi-google-token", credential);
-              setNotice(`Signed in as ${body.user.name}`);
+              setNotice(t("Signed in as {name}", { name: body.user.name }));
             }
           } catch (error) {
             setNotice(error instanceof Error ? error.message : "Google sign-in failed");
@@ -287,7 +290,7 @@ function App() {
       sessionStorage.setItem("janpratinidhi-google-token", credential);
       sessionStorage.removeItem("janpratinidhi-pending-google-token");
       setPendingProfile(null);
-      setNotice(`Welcome, ${body.user.firstName}`);
+      setNotice(t("Welcome, {name}", { name: body.user.firstName }));
     } catch (error) {
       throw error;
     } finally {
@@ -380,14 +383,18 @@ function App() {
         body: JSON.stringify({ status }),
       });
       await openAdmin();
-      setNotice(`User ${status === "active" ? "activated" : "deactivated"}`);
+      setNotice(t(status === "active" ? "User activated" : "User deactivated"));
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not update user");
     }
   };
   const deleteAccount = async (account: AdminUser) => {
     if (
-      !window.confirm(`Delete ${account.name}'s account? They will not be able to sign in again.`)
+      !window.confirm(
+        t("Delete {name}'s account? They will not be able to sign in again.", {
+          name: account.name,
+        }),
+      )
     )
       return;
     try {
@@ -411,18 +418,21 @@ function App() {
     return (
       <div className="admin-route-shell">
         <header className="admin-route-header">
-          <a className="brand" href="/" aria-label="Janpratinidhi home">
+          <a className="brand" href="/" aria-label={t("Janpratinidhi home")}>
             <span className="brand-mark">
               <Landmark size={19} />
             </span>
             <span className="brand-name">
-              Jan Pratinidhi<span>.</span> <small>ADMIN</small>
+              {t("Jan Pratinidhi")}
+              <span>.</span> <small>{t("ADMIN")}</small>
             </span>
           </a>
           <div className="theme-header-actions">
+            <LanguageSwitcher />
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <a className="admin-return-link" href="/">
-              View public website <ArrowUpRight size={14} />
+              {t("View public website") + " "}
+              <ArrowUpRight size={14} />
             </a>
           </div>
         </header>
@@ -442,7 +452,7 @@ function App() {
               onDeleteUser={deleteAccount}
             />
           ) : (
-            <div className="admin-route-loading">Loading admin dashboard…</div>
+            <div className="admin-route-loading">{t("Loading admin dashboard…")}</div>
           )
         ) : (
           <div className="admin-route-login">
@@ -450,14 +460,15 @@ function App() {
               <span className="admin-login-icon">
                 <ShieldCheck size={23} />
               </span>
-              <div className="eyebrow small-eyebrow">JANPRATINIDHI ADMIN</div>
-              <h1>Manage your public directory.</h1>
+              <div className="eyebrow small-eyebrow">{t("JANPRATINIDHI ADMIN")}</div>
+              <h1>{t("Manage your public directory.")}</h1>
               <p>
-                Sign in with your administrator credentials to manage representative records and
-                review user accounts.
+                {t(
+                  "Sign in with your administrator credentials to manage representative records and review user accounts.",
+                )}
               </p>
               <a href="/" className="admin-return-link">
-                ← Return to public website
+                {t("← Return to public website")}
               </a>
             </div>
             <AdminLoginForm busy={adminBusy} onSubmit={signInAdmin} />
@@ -466,17 +477,19 @@ function App() {
         {notice && (
           <div className="toast">
             <Check size={16} />
-            {notice}
-            <button onClick={() => setNotice("")} aria-label="Dismiss">
+            {t(notice)}
+            <button onClick={() => setNotice("")} aria-label={t("Dismiss")}>
               <X size={15} />
             </button>
           </div>
         )}
       </div>
     );
-  if (route.name === "directory")
+  if (route.name === "directory" || route.name === "map")
     return (
       <PublicPoliticianPage
+        key={route.name}
+        mapMode={route.name === "map"}
         theme={theme}
         onToggleTheme={toggleTheme}
         apiUrl={API_URL}
@@ -519,7 +532,7 @@ function App() {
       signOut={signOut}
       signIn={signIn}
       authBusy={authBusy}
-      notice={notice}
+      notice={t(notice)}
       setNotice={setNotice}
       selected={selected}
       setSelected={setSelected}

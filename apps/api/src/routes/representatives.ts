@@ -886,6 +886,8 @@ representativesRouter.get("/", async (req, res, next) => {
   try {
     const q = typeof req.query.q === "string" ? req.query.q : "";
     const state = typeof req.query.state === "string" ? req.query.state : "";
+    const constituency =
+      typeof req.query.constituency === "string" ? req.query.constituency.trim() : "";
     const party = typeof req.query.party === "string" ? req.query.party : "";
     const type = typeof req.query.type === "string" ? req.query.type.toUpperCase() : "ALL";
     const page = Number(req.query.page ?? 1);
@@ -896,10 +898,12 @@ representativesRouter.get("/", async (req, res, next) => {
         .json({ error: "page must be positive and limit must be between 1 and 50" });
     if (!["ALL", "MP", "MLA", "MLC"].includes(type))
       return res.status(400).json({ error: "type must be ALL, MP, MLA, or MLC" });
-    if (state.length > 100 || party.length > 100)
+    if (state.length > 100 || party.length > 100 || constituency.length > 150)
       return res.status(400).json({ error: "Filter values are too long" });
     const filter: Record<string, unknown> = { status: "published", sample: { $ne: true } };
     if (state) filter.state = state;
+    if (constituency)
+      filter.constituency = { $regex: `^${escapeRegex(constituency)}$`, $options: "i" };
     if (party) filter.party = { $regex: `^${escapeRegex(party.trim())}$`, $options: "i" };
     if (type === "MP") filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP"] };
     else if (type === "MLA") filter.office = "MLA";
@@ -911,6 +915,41 @@ representativesRouter.get("/", async (req, res, next) => {
       data: await withPartyCatalog(data),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Aggregate all published geography, independently of directory pagination.
+representativesRouter.get("/geography", async (_req, res, next) => {
+  try {
+    const data = await RepresentativeModel.aggregate([
+      {
+        $match: {
+          status: "published",
+          sample: { $ne: true },
+          office: { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA", "MLC"] },
+          state: { $type: "string", $ne: "" },
+        },
+      },
+      {
+        $group: {
+          _id: { state: "$state", constituency: "$constituency", office: "$office" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          state: "$_id.state",
+          constituency: { $ifNull: ["$_id.constituency", ""] },
+          office: "$_id.office",
+          count: 1,
+        },
+      },
+      { $sort: { state: 1, constituency: 1, office: 1 } },
+    ]);
+    res.json({ data });
   } catch (error) {
     next(error);
   }

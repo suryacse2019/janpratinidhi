@@ -1,3 +1,5 @@
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
+import { t, locale } from "../../i18n";
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, Landmark, Search, ShieldCheck } from "lucide-react";
 import type { Representative } from "@janpratinidhi/shared";
@@ -19,17 +21,20 @@ export function DashboardLoginGate({
             <Landmark size={19} />
           </span>
           <span className="brand-name">
-            Jan Pratinidhi<span>.</span>
+            {t("Jan Pratinidhi")}
+            <span>.</span>
           </span>
         </a>
+        <LanguageSwitcher />
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </div>
       <div>
         <ShieldCheck size={30} />
-        <h1>Sign in to your dashboard</h1>
-        <p>Use your Google account to search the representative directory.</p>
+        <h1>{t("Sign in to your dashboard")}</h1>
+        <p>{t("Use your Google account to search the representative directory.")}</p>
         <a className="primary-button" href="/">
-          Go to sign in <ArrowRight size={15} />
+          {t("Go to sign in") + " "}
+          <ArrowRight size={15} />
         </a>
       </div>
     </div>
@@ -239,33 +244,37 @@ export function UserDashboardPage({
             <Landmark size={19} />
           </span>
           <span className="brand-name">
-            Jan Pratinidhi<span>.</span>
+            {t("Jan Pratinidhi")}
+            <span>.</span>
           </span>
         </a>
         <div className="dashboard-header-actions">
+          <LanguageSwitcher />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <ProfileMenu user={user} onSignOut={onSignOut} />
         </div>
       </header>
       <main className="dashboard-main">
         <div className="dashboard-breadcrumb">
-          <a href="/">Home</a>
+          <a href="/">{t("Home")}</a>
           <span>/</span>
-          <b>Dashboard</b>
+          <b>{t("Dashboard")}</b>
         </div>
         <div className="dashboard-title">
           <div>
             <div className="eyebrow small-eyebrow">
-              YOUR DASHBOARD <span className="heading-rule" />
+              {t("YOUR DASHBOARD") + " "}
+              <span className="heading-rule" />
             </div>
-            <h1>Find your MP / MLA</h1>
+            <h1>{t("Find your MP / MLA")}</h1>
             <p>
-              Enter your constituency and select your state to find the MPs and MLAs who represent
-              you.
+              {t(
+                "Enter your constituency and select your state to find the MPs and MLAs who represent you.",
+              )}
             </p>
           </div>
           <span className="dashboard-total">
-            {total.toLocaleString("en-IN")} {total === 1 ? "record" : "records"}
+            {total.toLocaleString(locale())} {total === 1 ? t("record") : t("records")}
           </span>
         </div>
         <form
@@ -289,27 +298,33 @@ export function UserDashboardPage({
                 }}
                 placeholder={
                   addingPosition
-                    ? `Search for your ${addingPosition.toUpperCase()} by constituency or name`
-                    : "Enter your constituency, person, or party"
+                    ? t("Search for your {office} by constituency or name", {
+                        office: t(addingPosition.toUpperCase()),
+                      })
+                    : t("Enter your constituency, person, or party")
                 }
-                aria-label="Search representatives by constituency, person, or party"
+                aria-label={t("Search representatives by constituency, person, or party")}
                 aria-expanded={Boolean(addingPosition && query.trim())}
                 aria-autocomplete={addingPosition ? "list" : undefined}
               />
-              <button type="submit" aria-label="Search representatives">
+              <button type="submit" aria-label={t("Search representatives")}>
                 <Search size={17} />
-                <span>Search</span>
+                <span>{t("Search")}</span>
               </button>
               {addingPosition && query.trim() && (
                 <div
                   className="representative-picker-dropdown"
                   role="listbox"
-                  aria-label={`${addingPosition.toUpperCase()} search results`}
+                  aria-label={t("{office} search results", {
+                    office: t(addingPosition.toUpperCase()),
+                  })}
                 >
                   {loading ? (
-                    <div className="representative-picker-message">Searching representatives…</div>
+                    <div className="representative-picker-message">
+                      {t("Searching representatives…")}
+                    </div>
                   ) : error ? (
-                    <div className="representative-picker-message">{error}</div>
+                    <div className="representative-picker-message">{t(error)}</div>
                   ) : records.length ? (
                     records.map((person) => (
                       <RepresentativePickerOption
@@ -322,8 +337,9 @@ export function UserDashboardPage({
                     ))
                   ) : (
                     <div className="representative-picker-message">
-                      No matching {addingPosition.toUpperCase()} found. Try another constituency or
-                      name.
+                      {t("No matching") + " "}
+                      {addingPosition.toUpperCase()}
+                      {" " + t("found. Try another constituency or name.")}
                     </div>
                   )}
                 </div>
@@ -332,35 +348,35 @@ export function UserDashboardPage({
           </div>
           <div className="dashboard-filters">
             <label>
-              Type
+              {t("Type")}
               <select
                 value={type}
                 disabled={Boolean(addingPosition)}
                 onChange={(event) => resetPage(setType)(event.target.value)}
               >
-                <option value="ALL">All</option>
-                <option value="MP">MP</option>
-                <option value="MLA">MLA</option>
+                <option value="ALL">{t("All")}</option>
+                <option value="MP">{t("MP")}</option>
+                <option value="MLA">{t("MLA")}</option>
               </select>
             </label>
             <label>
-              Your state
+              {t("Your state")}
               <select value={state} onChange={(event) => resetPage(setState)(event.target.value)}>
-                <option value="">All states</option>
+                <option value="">{t("All states")}</option>
                 {filters.states.map((item) => (
                   <option key={item} value={item}>
-                    {item}
+                    {t(item)}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              Party
+              {t("Party")}
               <select value={party} onChange={(event) => resetPage(setParty)(event.target.value)}>
-                <option value="">All parties</option>
+                <option value="">{t("All parties")}</option>
                 {filters.parties.map((item) => (
                   <option key={item} value={item}>
-                    {item}
+                    {t(item)}
                   </option>
                 ))}
               </select>
@@ -371,10 +387,13 @@ export function UserDashboardPage({
           <div className="my-representatives-heading">
             <div>
               <div className="eyebrow small-eyebrow">
-                YOUR PICKS <span className="heading-rule" />
+                {t("YOUR PICKS") + " "}
+                <span className="heading-rule" />
               </div>
-              <h2 id="my-representatives-title">My MP and MLA</h2>
-              <p>Save the MP and MLA for your constituency so they’re easy to find next time.</p>
+              <h2 id="my-representatives-title">{t("My MP and MLA")}</h2>
+              <p>
+                {t("Save the MP and MLA for your constituency so they’re easy to find next time.")}
+              </p>
             </div>
           </div>
           {saveError && (
@@ -388,11 +407,11 @@ export function UserDashboardPage({
               return (
                 <article className="my-representative-slot" key={position}>
                   <div className="my-representative-slot-title">
-                    <span>{position.toUpperCase()}</span>
+                    <span>{t(position.toUpperCase())}</span>
                     <b>
                       {position === "mp"
-                        ? "Member of Parliament"
-                        : "Member of Legislative Assembly"}
+                        ? t("Member of Parliament")
+                        : t("Member of Legislative Assembly")}
                     </b>
                   </div>
                   {person ? (
@@ -403,13 +422,13 @@ export function UserDashboardPage({
                           className="my-representative-change"
                           onClick={() => startAddingRepresentative(position)}
                         >
-                          Change
+                          {t("Change")}
                         </button>
                         <button
                           className="my-representative-remove"
                           onClick={() => void removeMyRepresentative(position)}
                         >
-                          Remove
+                          {t("Remove")}
                         </button>
                       </div>
                     </>
@@ -418,12 +437,17 @@ export function UserDashboardPage({
                       <button
                         className="my-representative-add"
                         onClick={() => startAddingRepresentative(position)}
-                        aria-label={`Search to add your ${position.toUpperCase()}`}
+                        aria-label={t("Search to add your {office}", {
+                          office: t(position.toUpperCase()),
+                        })}
                       >
                         <span>+</span>
-                        <b>Add your {position.toUpperCase()}</b>
+                        <b>
+                          {t("Add your") + " "}
+                          {t(position.toUpperCase())}
+                        </b>
                       </button>
-                      <small>Choose from the representative search.</small>
+                      <small>{t("Choose from the representative search.")}</small>
                     </div>
                   )}
                 </article>
@@ -435,31 +459,35 @@ export function UserDashboardPage({
           <>
             <div className="results-heading">
               <div>
-                <h2>Representatives</h2>
-                <p>Search by constituency, then add an MP or MLA using the slots above.</p>
+                <h2>{t("Representatives")}</h2>
+                <p>{t("Search by constituency, then add an MP or MLA using the slots above.")}</p>
               </div>
               <span>
-                Page {totalPages ? page : 0} of {totalPages}
+                {t("Page") + " "}
+                {totalPages ? page : 0}
+                {" " + t("of") + " "}
+                {totalPages}
               </span>
             </div>
             {loading ? (
               <div className="directory-state" role="status">
                 <span className="loading-spinner" />
-                Searching the public records…
+                {t("Searching the public records…")}
               </div>
             ) : error ? (
               <div className="directory-state error-state" role="alert">
-                <h3>We couldn’t load the directory</h3>
-                <p>{error}</p>
-                <button onClick={() => setReload((n) => n + 1)}>Try again</button>
+                <h3>{t("We couldn’t load the directory")}</h3>
+                <p>{t(error)}</p>
+                <button onClick={() => setReload((n) => n + 1)}>{t("Try again")}</button>
               </div>
             ) : records.length === 0 ? (
               <div className="directory-state empty-results">
                 <Search size={26} />
-                <h3>No matching published records</h3>
+                <h3>{t("No matching published records")}</h3>
                 <p>
-                  Try a different name or clear one of the filters. Only approved records from the
-                  database appear here.
+                  {t(
+                    "Try a different name or clear one of the filters. Only approved records from the database appear here.",
+                  )}
                 </p>
                 <button
                   onClick={() => {
@@ -471,7 +499,7 @@ export function UserDashboardPage({
                     setPage(1);
                   }}
                 >
-                  Clear search and filters
+                  {t("Clear search and filters")}
                 </button>
               </div>
             ) : (
@@ -482,21 +510,24 @@ export function UserDashboardPage({
               </div>
             )}
             {!loading && !error && totalPages > 1 && (
-              <nav className="pagination-controls" aria-label="Representative results pages">
+              <nav className="pagination-controls" aria-label={t("Representative results pages")}>
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((value) => Math.max(1, value - 1))}
                 >
-                  ← Previous
+                  {t("← Previous")}
                 </button>
                 <span>
-                  Page {page} of {totalPages}
+                  {t("Page") + " "}
+                  {page}
+                  {" " + t("of") + " "}
+                  {totalPages}
                 </span>
                 <button
                   disabled={page >= totalPages}
                   onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
                 >
-                  Next →
+                  {t("Next →")}
                 </button>
               </nav>
             )}
@@ -586,7 +617,7 @@ function RepresentativePickerOption({
       <span className="representative-picker-option-info">
         <b>{person.name}</b>
         <small>
-          {person.office} · {person.constituency || "Constituency not listed"}, {person.state}
+          {t(person.office)} · {person.constituency || t("Constituency not listed")}, {person.state}
         </small>
       </span>
       <span className="representative-picker-party">{person.partyShort || person.party}</span>

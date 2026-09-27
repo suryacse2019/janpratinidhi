@@ -1,3 +1,4 @@
+import { t, locale } from "../../i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
@@ -41,35 +42,35 @@ export function DirectorySearchFilters({
         <input
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search by MP/MLA/MLC name, state, district, constituency or party"
-          aria-label="Search politicians"
+          placeholder={t("Search by MP/MLA/MLC name, state, district, constituency or party")}
+          aria-label={t("Search politicians")}
         />
-        <button type="submit" aria-label="Search politicians">
+        <button type="submit" aria-label={t("Search politicians")}>
           <Search size={17} />
-          <span>Search</span>
+          <span>{t("Search")}</span>
         </button>
       </div>
 
       <div className="dashboard-filters">
         <SearchableFilter
-          label="Type"
+          label={t("Type")}
           value={type}
           allValue="ALL"
-          allLabel="All types"
+          allLabel={t("All types")}
           options={["MP", "MLA", "MLC"]}
           onChange={onTypeChange}
         />
         <SearchableFilter
-          label="State"
+          label={t("State")}
           value={state}
-          allLabel="All states"
+          allLabel={t("All states")}
           options={states}
           onChange={onStateChange}
         />
         <SearchableFilter
-          label="Party"
+          label={t("Party")}
           value={party}
-          allLabel="All parties"
+          allLabel={t("All parties")}
           options={parties}
           onChange={onPartyChange}
         />
@@ -104,7 +105,7 @@ function SearchableFilter({
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
   const filtered = unique.filter((item) =>
-    item.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+    `${item} ${t(item)}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
   const choices = [
     { value: allValue, label: allLabel },
@@ -130,19 +131,19 @@ function SearchableFilter({
 
   return (
     <label htmlFor={id}>
-      {label}
+      {t(label)}
       <div className="directory-party-picker">
         <input
           id={id}
           className="directory-party-search"
           type="search"
-          value={open ? search : value === allValue ? "" : value}
+          value={open ? search : value === allValue ? "" : t(value)}
           placeholder={
             open
-              ? `Search ${label.toLowerCase()}…`
+              ? t("Search {label}…", { label: t(label) })
               : value === allValue
-                ? `${allLabel} · search`
-                : value
+                ? `${t(allLabel)} · ${t("Search")}`
+                : t(value)
           }
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
@@ -186,7 +187,7 @@ function SearchableFilter({
             className="directory-party-options"
             id={`${id}-options`}
             role="listbox"
-            aria-label={label}
+            aria-label={t(label)}
           >
             {choices.map((item, index) => (
               <button
@@ -200,12 +201,12 @@ function SearchableFilter({
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => select(item.value)}
               >
-                {item.label}
+                {t(item.label)}
               </button>
             ))}
             {filtered.length === 0 && (
               <span className="directory-party-empty" role="status">
-                No matching options
+                {t("No matching options")}
               </span>
             )}
           </div>

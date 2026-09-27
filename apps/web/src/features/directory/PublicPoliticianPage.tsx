@@ -1,3 +1,5 @@
+import { IndiaMapExplorer } from "../map/IndiaMapExplorer";
+import { t, locale } from "../../i18n";
 import { SiteHeader } from "../../components/SiteHeader";
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Landmark, Moon, Search, ShieldCheck, Sun } from "lucide-react";
@@ -17,9 +19,9 @@ export function ThemeToggle({
       className="theme-toggle"
       type="button"
       onClick={onToggle}
-      aria-label={`Switch to ${nextTheme} mode`}
+      aria-label={t(`Switch to ${nextTheme} mode`)}
       aria-pressed={theme === "dark"}
-      title={`Switch to ${nextTheme} mode`}
+      title={t(`Switch to ${nextTheme} mode`)}
     >
       {theme === "dark" ? (
         <Sun size={18} aria-hidden="true" />
@@ -42,7 +44,9 @@ export function PublicPoliticianPage({
   apiUrl,
   normalizeRepresentative,
   renderCard,
+  mapMode = false,
 }: {
+  mapMode?: boolean;
   theme: "light" | "dark";
   onToggleTheme: () => void;
   apiUrl: string;
@@ -53,6 +57,7 @@ export function PublicPoliticianPage({
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [type, setType] = useState("ALL");
   const [state, setState] = useState("");
+  const [constituency, setConstituency] = useState("");
   const [party, setParty] = useState("");
   const [filters, setFilters] = useState<DirectoryFilters>({ states: [], parties: [] });
   const [records, setRecords] = useState<Profile[]>([]);
@@ -62,6 +67,7 @@ export function PublicPoliticianPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
+  const showResults = !mapMode || Boolean(state);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -88,10 +94,19 @@ export function PublicPoliticianPage({
   }, []);
 
   useEffect(() => {
+    if (!showResults) {
+      setRecords([]);
+      setTotal(0);
+      setTotalPages(0);
+      setLoading(false);
+      setError("");
+      return;
+    }
     const controller = new AbortController();
     const params = new URLSearchParams({ page: String(page), limit: "50", type });
     if (debouncedQuery) params.set("q", debouncedQuery);
     if (state) params.set("state", state);
+    if (constituency) params.set("constituency", constituency);
     if (party) params.set("party", party);
     setLoading(true);
     setError("");
@@ -114,7 +129,7 @@ export function PublicPoliticianPage({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [debouncedQuery, type, state, party, page, reload]);
+  }, [debouncedQuery, type, state, constituency, party, page, reload, showResults]);
 
   const resetPage = (setter: (value: string) => void) => (value: string) => {
     setter(value);
@@ -125,102 +140,161 @@ export function PublicPoliticianPage({
     setDebouncedQuery("");
     setType("ALL");
     setState("");
+    setConstituency("");
     setParty("");
     setPage(1);
   };
 
   return (
     <div className="dashboard-shell public-politician-shell">
-      <SiteHeader politician>
+      <SiteHeader politician={!mapMode} map={mapMode}>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </SiteHeader>
       <main className="dashboard-main">
         <div className="dashboard-breadcrumb">
-          <a href="/">Home</a>
+          <a href="/">{t("Home")}</a>
           <span>/</span>
-          <b>Explore politicians</b>
+          <b>{t(mapMode ? "Search Map" : "Explore politicians")}</b>
         </div>
         <div className="dashboard-title">
           <div>
             <div className="eyebrow small-eyebrow">
-              PUBLIC DIRECTORY <span className="heading-rule" />
+              {t("PUBLIC DIRECTORY") + " "}
+              <span className="heading-rule" />
             </div>
-            <h1>Explore politicians</h1>
-            <p>Search MPs, MLAs, and MLCs by name, state, district, constituency, or party.</p>
-          </div>
-          <span className="dashboard-total">{total.toLocaleString("en-IN")} records</span>
-        </div>
-        <DirectorySearchFilters
-          query={query}
-          type={type}
-          state={state}
-          party={party}
-          states={filters.states}
-          parties={filters.parties}
-          onQueryChange={setQuery}
-          onTypeChange={(value) => resetPage(setType)(value)}
-          onStateChange={(value) => resetPage(setState)(value)}
-          onPartyChange={(value) => resetPage(setParty)(value)}
-          onSubmit={() => {
-            setDebouncedQuery(query.trim());
-            setPage(1);
-          }}
-        />
-        <div className="results-heading">
-          <div>
-            <h2>Politician profiles</h2>
+            <h1>{t(mapMode ? "Search Map" : "Explore politicians")}</h1>
             <p>
-              Showing{" "}
-              {records.length
-                ? `${(page - 1) * 50 + 1}–${(page - 1) * 50 + records.length} of ${total.toLocaleString("en-IN")}`
-                : "0"}{" "}
-              records
+              {t(
+                mapMode
+                  ? "Choose a state on the map to find its representatives."
+                  : "Search MPs, MLAs, and MLCs by name, state, district, constituency, or party.",
+              )}
             </p>
           </div>
-          <span>
-            Page {totalPages ? page : 0} of {totalPages}
-          </span>
-        </div>
-        {loading ? (
-          <div className="directory-state" role="status">
-            <span className="loading-spinner" />
-            Loading politician records…
-          </div>
-        ) : error ? (
-          <div className="directory-state error-state" role="alert">
-            <h3>We couldn’t load the directory</h3>
-            <p>{error}</p>
-            <button onClick={() => setReload((value) => value + 1)}>Try again</button>
-          </div>
-        ) : records.length === 0 ? (
-          <div className="directory-state empty-results">
-            <Search size={26} />
-            <h3>No matching politicians</h3>
-            <p>Try another search or remove a filter.</p>
-            <button onClick={clearFilters}>Clear search and filters</button>
-          </div>
-        ) : (
-          <div className="representative-results-grid">
-            {records.map((person) => (
-              <React.Fragment key={person.id}>{renderCard(person)}</React.Fragment>
-            ))}
-          </div>
-        )}
-        {!loading && !error && totalPages > 1 && (
-          <nav className="pagination-controls" aria-label="Politician directory pages">
-            <button disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
-              ← Previous
-            </button>
-            <span>
-              Page {page} of {totalPages}
+          {showResults && (
+            <span className="dashboard-total">
+              {total.toLocaleString(locale())}
+              {" " + t("records")}
             </span>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-            >
-              Next →
-            </button>
-          </nav>
+          )}
+        </div>
+        {mapMode && (
+          <IndiaMapExplorer
+            apiUrl={apiUrl}
+            state={state}
+            constituency={constituency}
+            onSelect={(nextState, nextConstituency) => {
+              setState(nextState);
+              setConstituency(nextConstituency);
+              setQuery("");
+              setDebouncedQuery("");
+              setType("ALL");
+              setParty("");
+              setPage(1);
+            }}
+          />
+        )}
+        {showResults && (
+          <>
+            {constituency && (
+              <p className="directory-location-filter">
+                {t("Constituency")}: <strong>{constituency}</strong>{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConstituency("");
+                    setPage(1);
+                  }}
+                >
+                  {t("Remove")}
+                </button>
+              </p>
+            )}
+            <DirectorySearchFilters
+              query={query}
+              type={type}
+              state={state}
+              party={party}
+              states={filters.states}
+              parties={filters.parties}
+              onQueryChange={setQuery}
+              onTypeChange={(value) => resetPage(setType)(value)}
+              onStateChange={(value) => {
+                setConstituency("");
+                resetPage(setState)(value);
+              }}
+              onPartyChange={(value) => resetPage(setParty)(value)}
+              onSubmit={() => {
+                setDebouncedQuery(query.trim());
+                setPage(1);
+              }}
+            />
+            <div className="results-heading">
+              <div>
+                <h2>{t("Politician profiles")}</h2>
+                <p>
+                  {t("Showing")}{" "}
+                  {records.length
+                    ? `${(page - 1) * 50 + 1}–${(page - 1) * 50 + records.length} of ${total.toLocaleString(locale())}`
+                    : "0"}{" "}
+                  {t("records")}
+                </p>
+              </div>
+              <span>
+                {t("Page") + " "}
+                {totalPages ? page : 0}
+                {" " + t("of") + " "}
+                {totalPages}
+              </span>
+            </div>
+            {loading ? (
+              <div className="directory-state" role="status">
+                <span className="loading-spinner" />
+                {t("Loading politician records…")}
+              </div>
+            ) : error ? (
+              <div className="directory-state error-state" role="alert">
+                <h3>{t("We couldn’t load the directory")}</h3>
+                <p>{t(error)}</p>
+                <button onClick={() => setReload((value) => value + 1)}>{t("Try again")}</button>
+              </div>
+            ) : records.length === 0 ? (
+              <div className="directory-state empty-results">
+                <Search size={26} />
+                <h3>{t("No matching politicians")}</h3>
+                <p>{t("Try another search or remove a filter.")}</p>
+                <button onClick={clearFilters}>{t("Clear search and filters")}</button>
+              </div>
+            ) : (
+              <div className="representative-results-grid">
+                {records.map((person) => (
+                  <React.Fragment key={person.id}>{renderCard(person)}</React.Fragment>
+                ))}
+              </div>
+            )}
+            {!loading && !error && totalPages > 1 && (
+              <nav className="pagination-controls" aria-label={t("Politician directory pages")}>
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage((value) => Math.max(1, value - 1))}
+                >
+                  {t("← Previous")}
+                </button>
+                <span>
+                  {t("Page") + " "}
+                  {page}
+                  {" " + t("of") + " "}
+                  {totalPages}
+                </span>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                >
+                  {t("Next →")}
+                </button>
+              </nav>
+            )}
+          </>
         )}
       </main>
     </div>

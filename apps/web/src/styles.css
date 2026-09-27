@@ -40,7 +40,7 @@ a {
 .site-shell {
   max-width: 1440px;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: clip;
   background: #f9f8f4;
 }
 .topline {
@@ -5889,4 +5889,41 @@ html[data-theme="dark"] .representative-detail-tabs button:focus-visible {
 .hero-actions > .primary-button:hover {
   background: #000;
   border-color: #000;
+}
+
+/* Keep navigation visible while the document scrolls. */
+.header.home-header,
+.admin-route-header,
+.dashboard-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+}
+.site-shell,
+.public-politician-shell,
+.profile-route-shell {
+  --site-header-height: 88px;
+}
+.site-shell :is(#home, #about, #contribute) {
+  scroll-margin-top: calc(var(--site-header-height) + 24px);
+}
+.profile-route-shell .representative-detail-tabs {
+  top: var(--site-header-height);
+}
+.profile-route-shell .representative-detail-anchor {
+  scroll-margin-top: calc(var(--site-header-height) + 65px);
+}
+@media (max-width: 1150px) {
+  .site-shell,
+  .public-politician-shell,
+  .profile-route-shell {
+    --site-header-height: 76px;
+  }
+}
+@media (max-width: 600px) {
+  .site-shell,
+  .public-politician-shell,
+  .profile-route-shell {
+    --site-header-height: 72px;
+  }
 }

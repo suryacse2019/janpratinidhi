@@ -1,0 +1,261 @@
+.india-explorer {
+  margin: 26px 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  overflow: clip;
+  scroll-margin-top: 120px;
+}
+.india-explorer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px;
+  border-bottom: 1px solid var(--line);
+}
+.india-explorer-heading h2 {
+  font: 750 24px/1.4 var(--serif);
+  margin: 10px 0;
+}
+.india-explorer-heading p,
+.india-map-browser > p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.india-explorer-heading > svg {
+  color: #b91d2a;
+  flex-shrink: 0;
+}
+.india-explorer-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+}
+.india-map-canvas {
+  padding: 20px;
+  background: #f2f5f5;
+  text-align: center;
+}
+.india-map-canvas svg {
+  display: block;
+  width: 100%;
+  height: 400px;
+}
+.india-map-canvas path[role="button"] {
+  fill: #d4dfdc;
+  stroke: #fff;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+.india-map-canvas path[role="button"]:hover,
+.india-map-canvas path[role="button"]:focus-visible {
+  fill: #e6ac85;
+  outline: none;
+  stroke: #803222;
+  stroke-width: 2;
+}
+.india-map-canvas path[role="button"].selected {
+  fill: #c01824;
+  stroke: #7c1820;
+}
+.india-map-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 12px 0;
+  min-height: 24px;
+}
+.india-map-caption svg {
+  width: 15px;
+  height: 15px;
+}
+.india-map-attribution {
+  display: block;
+  color: #67766f;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.india-map-attribution a {
+  text-decoration: underline;
+}
+.india-map-browser {
+  padding: 26px;
+  min-width: 0;
+}
+.india-map-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.india-map-breadcrumb button,
+.india-map-reset {
+  background: none;
+  border: 0;
+  color: #b31d27;
+  padding: 4px 0;
+  font: inherit;
+}
+.india-map-browser h3 {
+  margin: 18px 0 6px;
+  font-size: 20px;
+}
+.india-map-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  margin: 18px 0 12px;
+}
+.india-map-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  outline: none;
+  min-width: 0;
+}
+.india-map-search:focus-within {
+  outline: 2px solid #b31d27;
+  outline-offset: 2px;
+}
+.india-location-list {
+  max-height: 290px;
+  overflow-y: auto;
+}
+.india-location-list button {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-size: 13px;
+}
+.india-location-list button span {
+  flex: 1;
+}
+.india-location-list button b {
+  font-size: 11px;
+  background: #edf1ed;
+  color: #506255;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+.india-location-list button:hover,
+.india-location-list button.selected {
+  background: #fbefed;
+  border-color: #ecd2cf;
+}
+.india-map-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+.india-map-empty,
+.india-map-note {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.india-explorer button:focus-visible {
+  outline: 2px solid #c01824;
+  outline-offset: -2px;
+}
+html[data-theme="dark"] .india-explorer {
+  background: #202722;
+  border-color: #3d473f;
+}
+html[data-theme="dark"] .india-map-canvas {
+  background: #17211f;
+}
+html[data-theme="dark"] .india-map-canvas path[role="button"] {
+  fill: #52675f;
+  stroke: #17211f;
+}
+html[data-theme="dark"] .india-map-canvas path[role="button"]:hover,
+html[data-theme="dark"] .india-map-canvas path[role="button"]:focus-visible {
+  fill: #b99268;
+}
+html[data-theme="dark"] .india-map-canvas path[role="button"].selected {
+  fill: #d6555f;
+}
+html[data-theme="dark"] .india-location-list button:hover,
+html[data-theme="dark"] .india-location-list button.selected {
+  background: #422d30;
+  border-color: #795057;
+}
+html[data-theme="dark"] .india-map-attribution,
+html[data-theme="dark"] .india-map-note {
+  color: #a4b6ab;
+}
+@media (max-width: 700px) {
+  .india-explorer-grid {
+    grid-template-columns: 1fr;
+  }
+  .india-explorer-heading,
+  .india-map-browser {
+    padding: 20px;
+  }
+  .india-explorer-heading h2 {
+    font-size: 20px;
+  }
+  .india-map-canvas svg {
+    height: 340px;
+  }
+}
+.directory-location-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f3e7e6;
+  font-size: 13px;
+}
+.directory-location-filter button {
+  margin-left: auto;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #a31c26;
+  background: #fff;
+}
+html[data-theme="dark"] .directory-location-filter {
+  background: #422d30;
+}
+html[data-theme="dark"] .india-map-breadcrumb button,
+html[data-theme="dark"] .india-map-reset {
+  color: #ffb1b8;
+}
+html[data-theme="dark"] .dashboard-filters .directory-party-search,
+html[data-theme="dark"] .directory-party-options {
+  background: #252d28;
+  border-color: #56635b;
+  color: #eef3ed;
+}
+html[data-theme="dark"] .directory-party-options button {
+  color: #eef3ed;
+}
+html[data-theme="dark"]
+  .directory-party-options
+  button:is(:hover, [aria-selected="true"], [data-active="true"]) {
+  background: #51353a;
+  color: #ffe8eb;
+}

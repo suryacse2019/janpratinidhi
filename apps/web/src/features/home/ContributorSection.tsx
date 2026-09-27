@@ -1,3 +1,4 @@
+import { t } from "../../i18n";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Github } from "lucide-react";
 
@@ -51,26 +52,30 @@ export function ContributorSection() {
         </span>
         <div>
           <div className="eyebrow small-eyebrow">
-            COMMUNITY <span className="heading-rule" />
+            {t("COMMUNITY") + " "}
+            <span className="heading-rule" />
           </div>
           <h2 id="contributors-title">
-            Built by <em>Contributors</em>
+            {t("Built by") + " "}
+            <em>{t("Contributors")}</em>
           </h2>
           <p>
-            Jan Pratinidhi is open source and community-driven. Meet the people making Indian
-            democracy more transparent.
+            {t(
+              "Jan Pratinidhi is open source and community-driven. Meet the people making Indian democracy more transparent.",
+            )}
           </p>
         </div>
       </div>
       {loading ? (
         <p className="contributors-state" role="status">
-          Loading contributors from GitHub…
+          {t("Loading contributors from GitHub…")}
         </p>
       ) : error ? (
         <p className="contributors-state">
-          Contributor profiles are temporarily unavailable.{" "}
+          {t("Contributor profiles are temporarily unavailable.")}{" "}
           <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">
-            Visit the project on GitHub <ArrowUpRight size={13} />
+            {t("Visit the project on GitHub") + " "}
+            <ArrowUpRight size={13} />
           </a>
         </p>
       ) : contributors.length ? (
@@ -82,14 +87,14 @@ export function ContributorSection() {
               target="_blank"
               rel="noreferrer"
               key={person.login}
-              aria-label={`Open ${person.login}'s GitHub profile`}
+              aria-label={t("Open {name}'s GitHub profile", { name: person.login })}
             >
               <img src={person.avatar_url} alt="" loading="lazy" />
               <span className="contributor-details">
                 <b>{person.login}</b>
                 <small>
                   {person.contributions}{" "}
-                  {person.contributions === 1 ? "contribution" : "contributions"}
+                  {person.contributions === 1 ? t("contribution") : t("contributions")}
                 </small>
               </span>
               <ArrowUpRight className="contributor-link-icon" size={15} />
@@ -97,7 +102,7 @@ export function ContributorSection() {
           ))}
         </div>
       ) : (
-        <p className="contributors-state">Be the first to contribute to this project.</p>
+        <p className="contributors-state">{t("Be the first to contribute to this project.")}</p>
       )}
       <a
         className="contributors-project-link"
@@ -105,7 +110,8 @@ export function ContributorSection() {
         target="_blank"
         rel="noreferrer"
       >
-        View all contributors on GitHub <ArrowUpRight size={14} />
+        {t("View all contributors on GitHub") + " "}
+        <ArrowUpRight size={14} />
       </a>
     </section>
   );

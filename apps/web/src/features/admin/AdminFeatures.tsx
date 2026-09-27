@@ -1,3 +1,4 @@
+import { t, locale } from "../../i18n";
 import React, { useState } from "react";
 import {
   Activity,
@@ -100,14 +101,16 @@ export function ProfileCompletionModal({
         <div className="admin-login-icon">
           <Landmark size={21} />
         </div>
-        <div className="eyebrow small-eyebrow">ONE MORE STEP</div>
-        <h2 id="complete-profile-title">Complete your profile</h2>
+        <div className="eyebrow small-eyebrow">{t("ONE MORE STEP")}</div>
+        <h2 id="complete-profile-title">{t("Complete your profile")}</h2>
         <p className="profile-completion-copy">
-          Signed in with {user.email}. Add these details to finish creating your account.
+          {t("Signed in with") + " "}
+          {user.email}
+          {t(". Add these details to finish creating your account.")}
         </p>
         <form className="profile-completion-form" onSubmit={submit}>
           <label>
-            First name
+            {t("First name")}
             <input
               name="firstName"
               autoComplete="given-name"
@@ -117,7 +120,7 @@ export function ProfileCompletionModal({
             />
           </label>
           <label>
-            Last name
+            {t("Last name")}
             <input
               name="lastName"
               autoComplete="family-name"
@@ -127,7 +130,7 @@ export function ProfileCompletionModal({
             />
           </label>
           <label>
-            Phone number
+            {t("Phone number")}
             <input
               name="phoneNumber"
               type="tel"
@@ -138,23 +141,23 @@ export function ProfileCompletionModal({
             />
           </label>
           <label>
-            Gender
+            {t("Gender")}
             <select name="gender" defaultValue={user.gender ?? ""} required>
               <option value="" disabled>
-                Select an option
+                {t("Select an option")}
               </option>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-              <option value="non_binary">Non-binary</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
+              <option value="female">{t("Female")}</option>
+              <option value="male">{t("Male")}</option>
+              <option value="non_binary">{t("Non-binary")}</option>
+              <option value="prefer_not_to_say">{t("Prefer not to say")}</option>
             </select>
           </label>
           <p className="profile-data-note">
-            Your details are used for your account and shown to administrators.
+            {t("Your details are used for your account and shown to administrators.")}
           </p>
-          {error && <p className="admin-login-error">{error}</p>}
+          {error && <p className="admin-login-error">{t(error)}</p>}
           <button className="admin-add-button" type="submit" disabled={busy}>
-            {busy ? "Saving profile…" : "Save and continue"}
+            {busy ? t("Saving profile…") : t("Save and continue")}
           </button>
         </form>
       </section>
@@ -182,19 +185,19 @@ export function AdminLoginForm({
   };
   return (
     <form className="admin-route-login-form" onSubmit={submit}>
-      <h2>Admin sign in</h2>
-      <p>Enter the administrator email and password.</p>
+      <h2>{t("Admin sign in")}</h2>
+      <p>{t("Enter the administrator email and password.")}</p>
       <label>
-        Admin email
+        {t("Admin email")}
         <input type="email" name="email" autoComplete="username" required autoFocus />
       </label>
       <label>
-        Password
+        {t("Password")}
         <input type="password" name="password" autoComplete="current-password" required />
       </label>
-      {error && <p className="admin-login-error">{error}</p>}
+      {error && <p className="admin-login-error">{t(error)}</p>}
       <button className="admin-add-button" type="submit" disabled={busy}>
-        {busy ? "Signing in…" : "Sign in to admin"}
+        {busy ? t("Signing in…") : t("Sign in to admin")}
       </button>
     </form>
   );
@@ -279,7 +282,8 @@ export function AdminPanel({
     const parseJsonList = (key: string) => {
       const value = String(form.get(key) ?? "[]").trim();
       const parsed = JSON.parse(value || "[]");
-      if (!Array.isArray(parsed)) throw new Error(`${key} must be a JSON array`);
+      if (!Array.isArray(parsed))
+        throw new Error(t("{field} must be a JSON array", { field: key }));
       return parsed;
     };
     try {
@@ -332,7 +336,7 @@ export function AdminPanel({
   };
 
   const removeRepresentative = async (person: AdminRepresentative) => {
-    if (!window.confirm(`Permanently delete ${person.name}'s record?`)) return;
+    if (!window.confirm(t("Permanently delete {name}'s record?", { name: person.name }))) return;
     try {
       await adminRequest(apiUrl, `/representatives/${person._id}`, { method: "DELETE" });
       await onRefresh();
@@ -347,42 +351,44 @@ export function AdminPanel({
       <div className="admin-panel-heading">
         <div>
           <div className="eyebrow small-eyebrow">
-            ADMINISTRATION <span className="heading-rule" />
+            {t("ADMINISTRATION") + " "}
+            <span className="heading-rule" />
           </div>
           <h2>
-            {
+            {t(
               {
                 overview: "Dashboard overview",
                 representatives: "Representative records",
                 users: "Registered users",
                 activity: "User activity",
-              }[view]
-            }
+              }[view],
+            )}
             <span>.</span>
           </h2>
-          <p>Manage representative records and review registered Google accounts.</p>
+          <p>{t("Manage representative records and review registered Google accounts.")}</p>
         </div>
         <div className="admin-heading-actions">
           <button className="modal-done" onClick={onClose}>
-            Close admin
+            {t("Close admin")}
           </button>
           <button className="modal-done" onClick={onSignOut}>
-            <LogOut size={15} aria-hidden="true" /> Sign out
+            <LogOut size={15} aria-hidden="true" />
+            {" " + t("Sign out")}
           </button>
         </div>
       </div>
       <div className="admin-layout">
-        <nav className="admin-sidebar" aria-label="Admin sections">
+        <nav className="admin-sidebar" aria-label={t("Admin sections")}>
           <div className="admin-sidebar-brand">
             <span>
               <ShieldCheck size={22} />
             </span>
             <div>
-              <strong>Admin workspace</strong>
-              <small>Jan Pratinidhi</small>
+              <strong>{t("Admin workspace")}</strong>
+              <small>{t("Jan Pratinidhi")}</small>
             </div>
           </div>
-          <p className="admin-sidebar-label">WORKSPACE</p>
+          <p className="admin-sidebar-label">{t("WORKSPACE")}</p>
           {(
             [
               ["overview", "Overview", LayoutDashboard],
@@ -402,7 +408,7 @@ export function AdminPanel({
               }}
             >
               <Icon size={18} aria-hidden="true" />
-              <strong>{label}</strong>
+              <strong>{t(label)}</strong>
               {key === "users" ? (
                 <span>{stats.users}</span>
               ) : (
@@ -413,15 +419,15 @@ export function AdminPanel({
           <div className="admin-sidebar-note">
             <ShieldCheck size={18} aria-hidden="true" />
             <p>
-              Better records.
+              {t("Better records.")}
               <br />
-              <strong>Better public information.</strong>
+              <strong>{t("Better public information.")}</strong>
             </p>
           </div>
         </nav>
         <div className="admin-content">
           {loading ? (
-            <p className="admin-empty">Loading dashboard data…</p>
+            <p className="admin-empty">{t("Loading dashboard data…")}</p>
           ) : (
             <>
               {view === "overview" && (
@@ -453,22 +459,22 @@ export function AdminPanel({
                         <span className="admin-metric-icon">
                           <Icon size={19} aria-hidden="true" />
                         </span>
-                        <small>{label}</small>
-                        <b>{value.toLocaleString("en-IN")}</b>
+                        <small>{t(label)}</small>
+                        <b>{value.toLocaleString(locale())}</b>
                       </article>
                     ))}
                   </div>
                   <section className="admin-visitor-chart">
                     <div>
-                      <h3>Daily visitors</h3>
-                      <p>Unique browsers recorded per UTC day · last 7 days</p>
+                      <h3>{t("Daily visitors")}</h3>
+                      <p>{t("Unique browsers recorded per UTC day · last 7 days")}</p>
                     </div>
                     <div className="admin-visitor-bars">
                       {stats.dailyVisitors.map(({ date, count }) => (
                         <div
                           className="admin-visitor-day"
                           key={date}
-                          title={`${count} unique visitors on ${date}`}
+                          title={t("{count} unique visitors on {date}", { count, date })}
                         >
                           <b>{count}</b>
                           <div className="admin-visitor-bar-track">
@@ -479,7 +485,7 @@ export function AdminPanel({
                             />
                           </div>
                           <small>
-                            {new Date(`${date}T00:00:00Z`).toLocaleDateString("en-IN", {
+                            {new Date(`${date}T00:00:00Z`).toLocaleDateString(locale(), {
                               weekday: "short",
                               timeZone: "UTC",
                             })}
@@ -490,11 +496,12 @@ export function AdminPanel({
                   </section>
                   <div className="admin-overview-row">
                     <div>
-                      <h3>Recent sign-ins</h3>
-                      <p>Latest accounts registered with Google</p>
+                      <h3>{t("Recent sign-ins")}</h3>
+                      <p>{t("Latest accounts registered with Google")}</p>
                     </div>
                     <button className="admin-inline-button" onClick={() => setView("users")}>
-                      View all users <ArrowRight size={14} />
+                      {t("View all users") + " "}
+                      <ArrowRight size={14} />
                     </button>
                   </div>
                   {users.slice(0, 5).length ? (
@@ -505,20 +512,24 @@ export function AdminPanel({
                       onViewActivity={(user) => void showUserActivity(user)}
                     />
                   ) : (
-                    <p className="admin-empty">No users have signed in yet.</p>
+                    <p className="admin-empty">{t("No users have signed in yet.")}</p>
                   )}
                   <div className="admin-overview-row">
                     <div>
-                      <h3>Representative content</h3>
+                      <h3>{t("Representative content")}</h3>
                       <p>
-                        {stats.published} published · {stats.drafts} drafts
+                        {stats.published}
+                        {" " + t("published ·") + " "}
+                        {stats.drafts}
+                        {" " + t("drafts")}
                       </p>
                     </div>
                     <button
                       className="admin-inline-button"
                       onClick={() => setView("representatives")}
                     >
-                      Manage records <ArrowRight size={14} />
+                      {t("Manage records") + " "}
+                      <ArrowRight size={14} />
                     </button>
                   </div>
                 </>
@@ -527,10 +538,11 @@ export function AdminPanel({
                 <>
                   <div className="admin-view-title">
                     <div>
-                      <h3>Signed-in users</h3>
+                      <h3>{t("Signed-in users")}</h3>
                       <p>
-                        {users.length} registered Google{" "}
-                        {users.length === 1 ? "account" : "accounts"}
+                        {users.length}
+                        {" " + t("registered Google")}{" "}
+                        {users.length === 1 ? t("account") : t("accounts")}
                       </p>
                     </div>
                   </div>
@@ -542,7 +554,7 @@ export function AdminPanel({
                       onViewActivity={(user) => void showUserActivity(user)}
                     />
                   ) : (
-                    <p className="admin-empty">No Google accounts have signed in yet.</p>
+                    <p className="admin-empty">{t("No Google accounts have signed in yet.")}</p>
                   )}
                 </>
               )}
@@ -550,11 +562,11 @@ export function AdminPanel({
                 <>
                   <div className="admin-view-title">
                     <div>
-                      <h3>User activity</h3>
+                      <h3>{t("User activity")}</h3>
                       <p>
-                        One row per account with its latest action. Open details to see all recorded
-                        activity; repeat visits to a page update its last-visited time without
-                        adding another page entry.
+                        {t(
+                          "One row per account with its latest action. Open details to see all recorded activity; repeat visits to a page update its last-visited time without adding another page entry.",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -563,11 +575,11 @@ export function AdminPanel({
                       <table className="admin-table">
                         <thead>
                           <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Last action</th>
-                            <th>Time</th>
-                            <th>Details</th>
+                            <th>{t("User")}</th>
+                            <th>{t("Email")}</th>
+                            <th>{t("Last action")}</th>
+                            <th>{t("Time")}</th>
+                            <th>{t("Details")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -591,14 +603,14 @@ export function AdminPanel({
                               </td>
                               <td>
                                 {account.lastActivity
-                                  ? new Date(account.lastActivity.at).toLocaleString()
+                                  ? new Date(account.lastActivity.at).toLocaleString(locale())
                                   : "—"}
                               </td>
                               <td>
                                 <button
                                   type="button"
-                                  title={`Show ${account.name}'s activity`}
-                                  aria-label={`Show ${account.name}'s activity`}
+                                  title={t("Show {name}'s activity", { name: account.name })}
+                                  aria-label={t("Show {name}'s activity", { name: account.name })}
                                   onClick={() => void showUserActivity(account)}
                                 >
                                   <Clock3 size={15} />
@@ -610,7 +622,7 @@ export function AdminPanel({
                       </table>
                     </div>
                   ) : (
-                    <p className="admin-empty">No users or activity recorded yet.</p>
+                    <p className="admin-empty">{t("No users or activity recorded yet.")}</p>
                   )}
                 </>
               )}
@@ -618,12 +630,12 @@ export function AdminPanel({
                 <>
                   <div className="admin-view-title">
                     <div>
-                      <h3>Representative records</h3>
-                      <p>Only published records appear in the public directory.</p>
+                      <h3>{t("Representative records")}</h3>
+                      <p>{t("Only published records appear in the public directory.")}</p>
                     </div>
                     {!editor && (
                       <button className="admin-add-button" onClick={() => setEditor("new")}>
-                        + Add representative
+                        {t("+ Add representative")}
                       </button>
                     )}
                   </div>
@@ -642,7 +654,7 @@ export function AdminPanel({
                         <input
                           value={search}
                           onChange={(event) => setSearch(event.target.value)}
-                          placeholder="Search records by person, party, state…"
+                          placeholder={t("Search records by person, party, state…")}
                         />
                       </div>
                       {visibleRecords.length ? (
@@ -650,11 +662,11 @@ export function AdminPanel({
                           <table className="admin-table">
                             <thead>
                               <tr>
-                                <th>Representative</th>
-                                <th>Office</th>
-                                <th>State / constituency</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t("Representative")}</th>
+                                <th>{t("Office")}</th>
+                                <th>{t("State / constituency")}</th>
+                                <th>{t("Status")}</th>
+                                <th>{t("Actions")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -664,26 +676,26 @@ export function AdminPanel({
                                     <b>{person.name}</b>
                                     <small className="admin-subline">{person.party}</small>
                                   </td>
-                                  <td>{person.office}</td>
+                                  <td>{t(person.office)}</td>
                                   <td>
                                     {person.state}
                                     <small className="admin-subline">
-                                      {person.constituency || "Constituency not set"}
+                                      {person.constituency || t("Constituency not set")}
                                     </small>
                                   </td>
                                   <td>
                                     <span className={`admin-status ${person.status}`}>
-                                      {person.status}
+                                      {t(person.status)}
                                     </span>
                                   </td>
                                   <td>
                                     <div className="admin-row-actions">
-                                      <button onClick={() => setEditor(person)}>Edit</button>
+                                      <button onClick={() => setEditor(person)}>{t("Edit")}</button>
                                       <button
                                         className="danger"
                                         onClick={() => void removeRepresentative(person)}
                                       >
-                                        Delete
+                                        {t("Delete")}
                                       </button>
                                     </div>
                                   </td>
@@ -694,7 +706,7 @@ export function AdminPanel({
                         </div>
                       ) : (
                         <p className="admin-empty">
-                          No database records found. Add a representative to get started.
+                          {t("No database records found. Add a representative to get started.")}
                         </p>
                       )}
                     </>
@@ -715,30 +727,34 @@ export function AdminPanel({
           >
             <header>
               <div>
-                <h3 id="user-activity-title">Activity · {activityUser.name}</h3>
+                <h3 id="user-activity-title">
+                  {t("Activity ·") + " "}
+                  {activityUser.name}
+                </h3>
                 <p>
-                  {activityUser.email} · Page names are listed once, with the latest visit time.
+                  {activityUser.email}
+                  {" " + t("· Page names are listed once, with the latest visit time.")}
                 </p>
               </div>
               <button
                 type="button"
                 className="user-activity-close"
                 onClick={() => setActivityUser(null)}
-                aria-label="Close activity details"
+                aria-label={t("Close activity details")}
               >
                 <X size={18} />
               </button>
             </header>
             {activityLoading ? (
-              <p className="admin-empty">Loading user activity…</p>
+              <p className="admin-empty">{t("Loading user activity…")}</p>
             ) : userActivity.length ? (
               <div className="admin-table-wrap">
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Activity</th>
-                      <th>Details</th>
-                      <th>Time</th>
+                      <th>{t("Activity")}</th>
+                      <th>{t("Details")}</th>
+                      <th>{t("Time")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -746,14 +762,16 @@ export function AdminPanel({
                       <tr key={event._id}>
                         <td>{event.action}</td>
                         <td>{event.details || "—"}</td>
-                        <td>{new Date(event.lastSeenAt ?? event.createdAt).toLocaleString()}</td>
+                        <td>
+                          {new Date(event.lastSeenAt ?? event.createdAt).toLocaleString(locale())}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <p className="admin-empty">No activity recorded for this user yet.</p>
+              <p className="admin-empty">{t("No activity recorded for this user yet.")}</p>
             )}
           </section>
         </div>
@@ -784,15 +802,15 @@ function UserTable({
       <table className="admin-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Gender</th>
-            <th>Joined</th>
-            <th>Last sign-in</th>
-            <th>Last action</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{t("User")}</th>
+            <th>{t("Email")}</th>
+            <th>{t("Phone")}</th>
+            <th>{t("Gender")}</th>
+            <th>{t("Joined")}</th>
+            <th>{t("Last sign-in")}</th>
+            <th>{t("Last action")}</th>
+            <th>{t("Status")}</th>
+            <th>{t("Actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -805,17 +823,17 @@ function UserTable({
                 </span>
               </td>
               <td>{account.email}</td>
-              <td>{account.phoneNumber || "Profile incomplete"}</td>
-              <td>{account.gender ? genderLabel[account.gender] : "—"}</td>
-              <td>{new Date(account.createdAt).toLocaleDateString()}</td>
-              <td>{new Date(account.lastLoginAt).toLocaleString()}</td>
+              <td>{account.phoneNumber || t("Profile incomplete")}</td>
+              <td>{account.gender ? t(genderLabel[account.gender]) : "—"}</td>
+              <td>{new Date(account.createdAt).toLocaleDateString(locale())}</td>
+              <td>{new Date(account.lastLoginAt).toLocaleString(locale())}</td>
               <td>
                 {account.lastActivity ? (
                   <>
                     <b>{account.lastActivity.action}</b>
                     <small className="admin-subline">
                       {account.lastActivity.details} ·{" "}
-                      {new Date(account.lastActivity.at).toLocaleString()}
+                      {new Date(account.lastActivity.at).toLocaleString(locale())}
                     </small>
                   </>
                 ) : (
@@ -824,15 +842,15 @@ function UserTable({
               </td>
               <td>
                 <span className={`admin-status ${account.status ?? "active"}`}>
-                  {account.status ?? "active"}
+                  {t(account.status ?? "active")}
                 </span>
               </td>
               <td>
                 <div className="admin-row-actions">
                   <button
                     type="button"
-                    title={`Show ${account.name}'s activity`}
-                    aria-label={`Show ${account.name}'s activity`}
+                    title={t("Show {name}'s activity", { name: account.name })}
+                    aria-label={t("Show {name}'s activity", { name: account.name })}
                     onClick={() => onViewActivity(account)}
                   >
                     <Clock3 size={15} />
@@ -847,10 +865,10 @@ function UserTable({
                           )
                         }
                       >
-                        {account.status === "inactive" ? "Activate" : "Deactivate"}
+                        {account.status === "inactive" ? t("Activate") : t("Deactivate")}
                       </button>
                       <button className="danger" onClick={() => onDeleteUser(account)}>
-                        Delete
+                        {t("Delete")}
                       </button>
                     </>
                   )}
@@ -878,80 +896,93 @@ function RepresentativeEditor({
   return (
     <form className="admin-editor" onSubmit={onSubmit}>
       <div className="admin-editor-heading">
-        <h3>{person ? `Edit ${person.name}` : "Add representative"}</h3>
-        <span>Required fields are marked *</span>
+        <h3>{person ? `Edit ${person.name}` : t("Add representative")}</h3>
+        <span>{t("Required fields are marked *")}</span>
       </div>
       <div className="admin-form-grid">
         <label>
-          Full name *<input name="name" required defaultValue={person?.name} />
+          {t("Full name *")}
+          <input name="name" required defaultValue={person?.name} />
         </label>
         <label>
-          Slug
-          <input name="slug" defaultValue={person?.slug} placeholder="optional-profile-url-name" />
+          {t("Slug")}
+          <input
+            name="slug"
+            defaultValue={person?.slug}
+            placeholder={t("optional-profile-url-name")}
+          />
         </label>
         <label>
-          Initials
+          {t("Initials")}
           <input name="initials" maxLength={4} defaultValue={person?.initials} />
         </label>
         <label>
-          Office *
+          {t("Office *")}
           <select name="office" required defaultValue={person?.office ?? "MLA"}>
             {filters.slice(1).map((office) => (
-              <option key={office}>{office}</option>
+              <option key={office} value={office}>
+                {t(office)}
+              </option>
             ))}
           </select>
         </label>
         <label>
-          Record status
+          {t("Record status")}
           <select name="status" defaultValue={person?.status ?? "draft"}>
-            <option value="draft">Draft (hidden)</option>
-            <option value="published">Published (public)</option>
+            <option value="draft">{t("Draft (hidden)")}</option>
+            <option value="published">{t("Published (public)")}</option>
           </select>
         </label>
         <label>
-          Party *<input name="party" required defaultValue={person?.party} />
+          {t("Party *")}
+          <input name="party" required defaultValue={person?.party} />
         </label>
         <label>
-          Party short name
+          {t("Party short name")}
           <input name="partyShort" defaultValue={person?.partyShort} />
         </label>
         <label>
-          Party symbol image URL
+          {t("Party symbol image URL")}
           <input name="partySymbolUrl" type="url" defaultValue={person?.partySymbolUrl} />
         </label>
         <label>
-          Profile photo URL
+          {t("Profile photo URL")}
           <input name="photoUrl" type="url" defaultValue={person?.photoUrl} />
         </label>
         <label>
-          State *<input name="state" required defaultValue={person?.state} />
+          {t("State *")}
+          <input name="state" required defaultValue={person?.state} />
         </label>
         <label>
-          Constituency
+          {t("Constituency")}
           <input name="constituency" defaultValue={person?.constituency} />
         </label>
         <label>
-          House
+          {t("House")}
           <input
             name="house"
-            placeholder="Lok Sabha or Vidhan Sabha"
+            placeholder={t("Lok Sabha or Vidhan Sabha")}
             defaultValue={person?.house}
           />
         </label>
         <label>
-          Serving since
+          {t("Serving since")}
           <input name="since" defaultValue={person?.since} />
         </label>
         <label>
-          Term start
-          <input name="termStart" defaultValue={person?.termStart} placeholder="YYYY or date" />
+          {t("Term start")}
+          <input
+            name="termStart"
+            defaultValue={person?.termStart}
+            placeholder={t("YYYY or date")}
+          />
         </label>
         <label>
-          Term end
-          <input name="termEnd" defaultValue={person?.termEnd} placeholder="YYYY or date" />
+          {t("Term end")}
+          <input name="termEnd" defaultValue={person?.termEnd} placeholder={t("YYYY or date")} />
         </label>
         <label>
-          Election year
+          {t("Election year")}
           <input
             name="electionYear"
             type="number"
@@ -961,11 +992,11 @@ function RepresentativeEditor({
           />
         </label>
         <label>
-          Education
+          {t("Education")}
           <input name="education" defaultValue={person?.education} />
         </label>
         <label className="wide-field">
-          Biography / description
+          {t("Biography / description")}
           <textarea
             name="description"
             rows={3}
@@ -973,31 +1004,31 @@ function RepresentativeEditor({
           />
         </label>
         <label className="wide-field">
-          Profile summary
+          {t("Profile summary")}
           <textarea name="summary" rows={2} defaultValue={person?.summary} />
         </label>
         <label className="wide-field">
-          Sources (JSON array)
+          {t("Sources (JSON array)")}
           <textarea
             name="sources"
             rows={4}
             defaultValue={JSON.stringify(person?.sources ?? [], null, 2)}
             spellCheck={false}
           />
-          <small>Each source needs title, url, publisher, sourceType, and accessedAt.</small>
+          <small>{t("Each source needs title, url, publisher, sourceType, and accessedAt.")}</small>
         </label>
         <label className="wide-field">
-          Election history (JSON array)
+          {t("Election history (JSON array)")}
           <textarea
             name="elections"
             rows={5}
             defaultValue={JSON.stringify(person?.elections ?? [], null, 2)}
             spellCheck={false}
           />
-          <small>Keep each election's source details with its result.</small>
+          <small>{t("Keep each election's source details with its result.")}</small>
         </label>
         <label className="wide-field">
-          Additional record data (JSON object)
+          {t("Additional record data (JSON object)")}
           <textarea
             name="recordData"
             rows={5}
@@ -1008,10 +1039,10 @@ function RepresentativeEditor({
       </div>
       <div className="admin-editor-actions">
         <button type="button" className="modal-done" onClick={onCancel}>
-          Cancel
+          {t("Cancel")}
         </button>
         <button type="submit" className="admin-add-button" disabled={saving}>
-          {saving ? "Saving…" : "Save record"}
+          {saving ? t("Saving…") : t("Save record")}
         </button>
       </div>
     </form>

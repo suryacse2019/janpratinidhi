@@ -166,3 +166,19 @@ Never include credentials, private user data, or secrets in issues, commits, or 
 ## License
 
 The project code is licensed under the [MIT License](LICENSE). Third-party data and media remain subject to their own licenses and source terms.
+
+### Language and map browsing
+
+- The header language selector switches between English and Hindi on public pages and in the admin panel. The choice persists in local storage and synchronizes across tabs. Switching language preserves filters and unsaved editor fields.
+- Interface translations live in `apps/web/src/i18n/hi.json`; `t()` supports named parameters and falls back to the English key. Original names, biographies, source documents, and user-entered records retain their source language. Dates use the selected locale.
+- Open **Search Map** (`/search-map`) to browse the India map. The standard directory remains at `/politician`. Map results appear only after selecting a state. Select a state (or use the searchable list), then a constituency to filter published representative records. Map regions support Tab, Enter, and Space. Counts describe available published records, not nationwide seat coverage.
+- The map uses locally bundled, simplified state boundaries. Source, license, and rebuild instructions are in `apps/web/src/features/map/ATTRIBUTION.md`. Constituencies are database-backed lists, not constituency boundary polygons.
+- `GET /api/representatives/geography` returns published, non-sample counts grouped by state, constituency, and office. The directory accepts an optional exact `constituency` filter. Run the updated API alongside the web app for this feature.
+
+Feature checks:
+
+```sh
+node scripts/check-translations.mjs
+node --import tsx --test apps/api/tests/geography.test.ts
+npm run build
+```
