@@ -117,20 +117,47 @@ The code license does not grant rights to third-party datasets, photographs, par
 
 ## Contributing
 
-Contributions are welcome. Before a large data import, open an issue describing the source, retrieval date, transformation steps, and any licensing restrictions.
+Contributions are welcome, including code, documentation, accessibility improvements, and carefully sourced corrections.
 
-For code changes:
+### Contribute a code or documentation change
 
-1. Open or find an issue describing the change.
-2. Fork the repository and create a branch for your change.
-3. Make the change and run the checks:
+1. **Pick a task.** Browse the repository's open issues or create an issue describing the bug or improvement you want to work on. For a large change, discuss the approach in an issue first.
+2. **Fork the repository.** On GitHub, open [Jan Pratinidhi](https://github.com/suryacse2019/janpratinidhi) and select **Fork**. This creates a copy under your GitHub account.
+3. **Clone your fork and install dependencies:**
+
+   ```sh
+   git clone https://github.com/YOUR-GITHUB-USERNAME/janpratinidhi.git
+   cd janpratinidhi
+   npm install
+   ```
+
+4. **Create a branch** for your change:
+
+   ```sh
+   git checkout -b describe-your-change
+   ```
+
+5. **Make your change.** Keep it focused. For local development, copy `.env.example` to `apps/api/.env` and fill in your own development values. Never commit this file, credentials, or private user information.
+6. **Run the project checks** from the repository root:
 
    ```sh
    npm run typecheck
    npm run build
    ```
 
-4. Open a pull request with a clear summary, relevant screenshots for UI changes, and any data-source or licensing details.
+7. **Commit and push your branch** to your fork:
+
+   ```sh
+   git add .
+   git commit -m "Describe your change"
+   git push -u origin describe-your-change
+   ```
+
+8. **Open a pull request.** On GitHub, use **Compare & pull request** to propose your branch for merging into the original repository. Explain what changed and why. Include screenshots for visual changes and links to sources for factual or data changes. A maintainer will review it and may request revisions.
+
+### Suggest a data correction or contribute records
+
+Open an issue with the representative's name, the field to correct, the proposed correction, and a direct source URL with the date you checked it. Before a large data import, open an issue describing the original source, retrieval date, transformation steps, and any licensing restrictions. Do not submit private personal information or material you do not have permission to redistribute.
 
 Never include credentials, private user data, or secrets in issues, commits, or pull requests.
 
