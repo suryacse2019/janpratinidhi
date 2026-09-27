@@ -10,7 +10,15 @@ import { partiesRouter } from "./routes/parties.js";
 import { syncPartyCatalog } from "./services/partyCatalog.js";
 
 const app = express();
-app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? "http://localhost:5173" }));
+const allowedOrigins = new Set([
+  "https://janpratinidhi.vercel.app",
+  "http://localhost:5173",
+  ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
+]);
+app.use(cors({ origin: (origin, callback) => {
+  if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+  callback(new Error("Origin is not allowed by CORS"));
+} }));
 app.use(express.json({ limit: "1mb" }));
 
 let databaseConnection: Promise<void> | undefined;
