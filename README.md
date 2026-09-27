@@ -1,46 +1,139 @@
-# Janpratinidhi
+# Jan Pratinidhi
 
-An open source directory of India's elected representatives, election records, and public sources. The name means “people's representative”.
+An open directory of India's elected representatives, election records, and public sources. **Jan Pratinidhi** means “people's representative.”
 
-## Project status
+- **Website:** https://janpratinidhi.vercel.app
+- **Source code:** https://github.com/suryacse2019/janpratinidhi
 
-Early MVP scaffold. Representative profiles are served from MongoDB and must be reviewed and published by an administrator. The repository does not bundle a complete national representative dataset.
+> **Project status:** Early MVP. The directory is a work in progress and does not yet contain a complete national dataset. Records must be reviewed and published by an administrator before appearing in the public directory.
 
-## Stack
+## What it does
 
-- React + TypeScript + Vite
-- Node.js + Express + TypeScript
-- MongoDB + Mongoose
+- Search published MP and MLA profiles by name, constituency, state, and party.
+- View representative details, election information, and linked public sources.
+- Sign in with Google and save an MP and MLA to a user dashboard.
+- Manage user accounts and representative records through a separate admin area.
+
+## Technology
+
+- React, TypeScript, and Vite
+- Node.js, Express, and TypeScript
+- MongoDB and Mongoose
 - npm workspaces
 
 ## Run locally
 
-1. Install Node.js 20 or newer and MongoDB (local or managed).
-2. Copy `.env.example` to `apps/api/.env` and configure `MONGODB_URI`.
-3. From the repository root run `npm install` and `npm run dev`.
-4. Open http://localhost:5173. The API health endpoint is http://localhost:4000/api/health.
+### Requirements
 
-## Google sign-in and directory
+- Node.js 20 or newer
+- npm
+- A local MongoDB server or a MongoDB Atlas database
 
-Create a Google OAuth web client in Google Cloud Console and add both `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` to `apps/api/.env` using its client ID (not the client secret). Vite is configured to read `apps/api/.env`; only `VITE_` variables are exposed to browser code. Set the authorized JavaScript origin to `http://localhost:5173`. Configure `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and a random `ADMIN_SESSION_SECRET` of at least 32 characters in `apps/api/.env`. The **Sign in with Google** flow is for regular users; first-time users must provide first name, last name, phone number, and gender before accessing `/dashboard`. The dashboard's **Find Your MP / MLA** feature requires a complete, active user account. It supports name, constituency, state, party, and MP/MLA filters, server-side pagination, and a detail page at `/representatives/:id`. The separate **Admin** header button opens `/admin/dashboard` and uses the admin email and password. Admin sessions expire after eight hours, and repeated failed logins are rate limited. The API verifies Google ID tokens and stores user profiles and account status in MongoDB. Admins can view users' submitted details, activate or deactivate accounts, and soft-delete accounts; inactive or deleted accounts cannot sign in. The admin dashboard includes tools to create, edit, publish, draft, or delete representative records, including photo and party symbol URLs, term/election information, source-backed records, and additional public record data. Admin API requests require a valid signed admin session. Representative data is not bundled: only published records entered and approved by an administrator appear in search. Add direct sources and verification dates for claims; the application does not invent representative details.
+### Install and configure
 
-### Representative API
+1. Clone the repository and enter its directory:
 
-- `GET /api/representatives/search?q=&type=ALL|MP|MLA&state=&party=&page=1&limit=10` — authenticated with a Google bearer ID token; returns published records and pagination metadata.
-- `GET /api/representatives/filters` — authenticated; returns available states and parties from published records.
-- `GET /api/representatives/:id` — returns a published representative record for its details page.
-- `GET /api/representatives` — existing public directory query endpoint.
+   ```sh
+   git clone https://github.com/suryacse2019/janpratinidhi.git
+   cd janpratinidhi
+   ```
 
-The dashboard loads ten records per page. To try it locally, start MongoDB and the app with `npm run dev`, sign in with Google, complete the profile form, and open **Dashboard** → **Find Your MP / MLA**. Add and publish verified records from `/admin/dashboard` first; an empty published dataset correctly displays no results. Run `npm run typecheck` and `npm run build` for static validation.
+2. Install dependencies from the repository root:
 
-## Data and attribution
+   ```sh
+   npm install
+   ```
 
-Each published claim should have a source record with a direct URL and the date it was checked. Useful starting points include the [ECI affidavit portal](https://affidavit.eci.gov.in/) and [ECI statistical reports](https://www.eci.gov.in/statistical-reports). Respect source terms and copyright, particularly for photographs and bulk data. Code license does not grant rights to third-party data.
+3. Copy `.env.example` to `apps/api/.env` and replace the example values. Do not commit this file.
+
+4. Start the API and website:
+
+   ```sh
+   npm run dev
+   ```
+
+5. Open http://localhost:5173. The API health endpoint is http://localhost:4000/api/health.
+
+The Vite app reads local environment variables from `apps/api/.env`. Only variables prefixed with `VITE_` are exposed to browser code. Never put passwords, database credentials, or private keys in a `VITE_` variable.
+
+## Environment variables
+
+| Variable | Used by | Description |
+| --- | --- | --- |
+| `MONGODB_URI` | API | MongoDB connection string. |
+| `GOOGLE_CLIENT_ID` | API | Google OAuth web client ID used to verify sign-in credentials. |
+| `VITE_GOOGLE_CLIENT_ID` | Website | The same Google OAuth web client ID, used by Google Identity Services in the browser. |
+| `CLIENT_ORIGIN` | API | Website origin allowed by CORS, for example `http://localhost:5173`. |
+| `ADMIN_EMAIL` | API | Email address for the separate admin login. |
+| `ADMIN_PASSWORD` | API | Strong, unique password for the admin login. |
+| `ADMIN_SESSION_SECRET` | API | Random secret of at least 32 characters used to sign admin sessions. |
+| `VITE_API_URL` | Website | API base URL, including `/api`. Defaults to the production API URL in production and `http://localhost:4000/api` locally. |
+| `PORT` | API | Local API port. Defaults to `4000`. |
+
+### Google sign-in
+
+Create a Google OAuth client with application type **Web application**. Add your website origins under **Authorized JavaScript origins**:
+
+- Local: `http://localhost:5173`
+- Production: `https://janpratinidhi.vercel.app`
+
+Set `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` to the same client ID. A client ID is intended to be used by the browser; do not use or publish the client secret in frontend code.
+
+## Deploy on Vercel
+
+This repository is a monorepo, so create a separate Vercel project for each app, both connected to this GitHub repository:
+
+1. Create the **website** project with Root Directory `apps/web`. Use the Vite framework preset and output directory `dist`.
+2. Create the **API** project with Root Directory `apps/api`. The API exports its Express application for Vercel Functions.
+3. Add the required environment variables in each project's **Settings → Environment Variables**. Set `VITE_API_URL` and `VITE_GOOGLE_CLIENT_ID` on the website project; set `MONGODB_URI`, `GOOGLE_CLIENT_ID`, `CLIENT_ORIGIN`, and the admin variables on the API project.
+4. Use a hosted MongoDB database reachable by Vercel. Do not use `localhost` for the production `MONGODB_URI`.
+5. Set `CLIENT_ORIGIN` to the production website origin, then redeploy both projects after changing environment variables.
+
+The `VITE_` values are included in the website bundle at build time. Changes to them require a new website deployment.
+
+## API overview
+
+The API base path is `/api`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/health` | API health check. |
+| `GET /api/representatives` | Public, paginated published directory. |
+| `GET /api/representatives/directory-filters` | Public state and party filters. |
+| `GET /api/representatives/:id` | Published representative details. |
+| `GET /api/representatives/:id/external-profile` | Matched public profile information from external sources. |
+| `GET /api/representatives/search` | Authenticated representative search. |
+| `GET /api/representatives/filters` | Authenticated directory filters. |
+| `POST /api/auth/google` | Verify Google sign-in and create or retrieve a user account. |
+| `POST /api/auth/complete-profile` | Save required first-login profile details. |
+
+Authenticated endpoints require a Google ID token in the `Authorization: Bearer <token>` header. Admin endpoints are under `/api/admin` and require a valid admin session.
+
+## Data quality and attribution
+
+This project aims to make civic information easier to explore, not to replace official records. Published claims should include a direct source and the date that source was checked. Verify names, offices, constituencies, election results, and dates against authoritative sources.
+
+The code license does not grant rights to third-party datasets, photographs, party symbols, or other media. Check the terms and attribution requirements for every external source and contributed asset before publishing it. Avoid collecting or publishing private personal information.
 
 ## Contributing
 
-Please open an issue before large data imports. Include the original source, retrieval date, transformation steps, and any licensing restrictions. Never submit private credentials or personal data that is not already intentionally published by a reliable source.
+Contributions are welcome. Before a large data import, open an issue describing the source, retrieval date, transformation steps, and any licensing restrictions.
+
+For code changes:
+
+1. Open or find an issue describing the change.
+2. Fork the repository and create a branch for your change.
+3. Make the change and run the checks:
+
+   ```sh
+   npm run typecheck
+   npm run build
+   ```
+
+4. Open a pull request with a clear summary, relevant screenshots for UI changes, and any data-source or licensing details.
+
+Never include credentials, private user data, or secrets in issues, commits, or pull requests.
 
 ## License
 
-MIT for project code. Refer to individual source terms for contributed data and media.
+The project code is licensed under the [MIT License](LICENSE). Third-party data and media remain subject to their own licenses and source terms.
