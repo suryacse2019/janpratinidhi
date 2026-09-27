@@ -7,6 +7,8 @@ import { authRouter } from "./routes/auth.js";
 import { representativesRouter } from "./routes/representatives.js";
 import { healthRouter } from "./routes/health.js";
 import { partiesRouter } from "./routes/parties.js";
+import { analyticsRouter } from "./routes/analytics.js";
+import { activityRouter } from "./routes/activity.js";
 import { syncPartyCatalog } from "./services/partyCatalog.js";
 
 const app = express();
@@ -48,6 +50,8 @@ app.use(async (req, res, next) => {
 });
 
 app.use("/api/health", healthRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/activity", activityRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/representatives", representativesRouter);

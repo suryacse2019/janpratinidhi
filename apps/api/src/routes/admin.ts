@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { RepresentativeModel } from "../models/Representative.js";
 import { UserModel } from "../models/User.js";
+import { SiteVisitModel } from "../models/SiteVisit.js";
+import { ActivityEventModel } from "../models/ActivityEvent.js";
 import { syncPartyCatalog, withPartyCatalog } from "../services/partyCatalog.js";
 
 export const adminRouter = Router();
@@ -18,18 +20,67 @@ function validationError(error: unknown): error is mongoose.Error.ValidationErro
 
 adminRouter.get("/dashboard", async (_req, res, next) => {
   try {
-    const [users, representatives, published, drafts] = await Promise.all([
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10);
+    const weekStart = new Date(today);
+    weekStart.setUTCDate(weekStart.getUTCDate() - 6);
+    const weekStartKey = weekStart.toISOString().slice(0, 10);
+    const [users, representatives, published, drafts, visitRows] = await Promise.all([
       UserModel.countDocuments(), RepresentativeModel.countDocuments(),
       RepresentativeModel.countDocuments({ status: "published" }), RepresentativeModel.countDocuments({ status: "draft" }),
+      SiteVisitModel.aggregate<{ _id: string; count: number }>([
+        { $match: { day: { $gte: weekStartKey, $lte: todayKey } } },
+        { $group: { _id: "$day", count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
     ]);
-    res.json({ stats: { users, representatives, published, drafts } });
+    const counts = new Map(visitRows.map(({ _id, count }) => [_id, count]));
+    const dailyVisitors = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(weekStart);
+      date.setUTCDate(date.getUTCDate() + index);
+      const day = date.toISOString().slice(0, 10);
+      return { date: day, count: counts.get(day) ?? 0 };
+    });
+    res.json({ stats: { users, representatives, published, drafts, todayVisitors: counts.get(todayKey) ?? 0, dailyVisitors } });
   } catch (error) { next(error); }
 });
 
 adminRouter.get("/users", async (_req, res, next) => {
   try {
-    const data = await UserModel.find({}, { googleId: 0 }).sort({ createdAt: -1 }).lean();
+    const [users, activityRows] = await Promise.all([
+      UserModel.find({}, { googleId: 0 }).sort({ createdAt: -1 }).lean(),
+      ActivityEventModel.aggregate([
+        { $sort: { lastSeenAt: -1, createdAt: -1 } },
+        { $group: { _id: "$userId", event: { $first: "$$ROOT" } } },
+        { $project: { _id: 1, action: "$event.action", details: "$event.details", at: { $ifNull: ["$event.lastSeenAt", "$event.createdAt"] } } },
+      ]),
+    ]);
+    const lastActivityByUser = new Map(activityRows.map((row: any) => [String(row._id), { action: row.action, details: row.details, at: row.at }]));
+    const data = users.map((user: any) => ({ ...user, lastActivity: lastActivityByUser.get(String(user._id)) ?? null }));
     res.json({ data, total: data.length });
+  } catch (error) { next(error); }
+});
+
+adminRouter.get("/activity", async (req, res, next) => {
+  try {
+    const limit = Math.min(250, Math.max(1, Number(req.query.limit) || 100));
+    const filter: Record<string, unknown> = {};
+    if (typeof req.query.userId === "string" && mongoose.isValidObjectId(req.query.userId)) filter.userId = req.query.userId;
+    const events = await ActivityEventModel.find(filter)
+      .sort({ lastSeenAt: -1, createdAt: -1 })
+      .limit(limit)
+      .populate("userId", "name email")
+      .lean();
+    const seenPages = new Set<string>();
+    const data = events.filter((event: any) => {
+      if (event.action !== "Viewed page") return true;
+      const userId = typeof event.userId === "object" ? String(event.userId?._id) : String(event.userId);
+      const key = `${userId}:${event.details}`;
+      if (seenPages.has(key)) return false;
+      seenPages.add(key);
+      return true;
+    });
+    res.json({ data });
   } catch (error) { next(error); }
 });
 

@@ -2,6 +2,7 @@ import { Router } from "express";
 import mongoose from "mongoose";
 import { constantTimeEqual, createAdminSession, verifyAdminSession } from "../auth/adminSession.js";
 import { UserModel } from "../models/User.js";
+import { recordUserActivity } from "../services/activityLog.js";
 
 type GoogleClaims = { aud?: string; sub?: string; email?: string; email_verified?: string; name?: string; picture?: string };
 const failedAdminAttempts = new Map<string, { count: number; blockedUntil: number }>();
@@ -39,6 +40,7 @@ authRouter.post("/google", async (req, res, next) => {
       user.email = email; user.name = user.profileComplete ? user.name : (claims.name ?? email); user.picture = claims.picture; user.lastLoginAt = new Date();
       await user.save();
     }
+    await recordUserActivity(String(user._id), "Signed in with Google");
     res.json({ user: { id: user._id, email: user.email, name: user.name, picture: user.picture, firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phoneNumber, gender: user.gender, profileComplete: user.profileComplete, status: user.status } });
   } catch (error) { next(error); }
 });
@@ -61,6 +63,7 @@ authRouter.post("/complete-profile", async (req, res, next) => {
     user.firstName = firstName; user.lastName = lastName; user.phoneNumber = phoneNumber; user.gender = gender;
     user.name = `${firstName} ${lastName}`; user.profileComplete = true; user.lastLoginAt = new Date();
     await user.save();
+    await recordUserActivity(String(user._id), "Completed profile");
     res.json({ user: { id: user._id, email: user.email, name: user.name, picture: user.picture, firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phoneNumber, gender: user.gender, profileComplete: true, status: user.status } });
   } catch (error) { next(error); }
 });

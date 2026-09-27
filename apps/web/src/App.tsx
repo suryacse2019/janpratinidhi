@@ -38,12 +38,35 @@ function App() {
   const [adminBusy, setAdminBusy] = useState(false);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [adminRepresentatives, setAdminRepresentatives] = useState<AdminRepresentative[]>([]);
-  const [adminStats, setAdminStats] = useState<AdminStats>({ users: 0, representatives: 0, published: 0, drafts: 0 });
+  const [adminStats, setAdminStats] = useState<AdminStats>({ users: 0, representatives: 0, published: 0, drafts: 0, todayVisitors: 0, dailyVisitors: [] });
   const [adminLoading, setAdminLoading] = useState(false);
   const [selected, setSelected] = useState<Profile | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+
+  useEffect(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = "janpratinidhi-daily-visitor";
+      const saved = JSON.parse(localStorage.getItem(key) ?? "null") as { day?: string; visitorId?: string; countedDay?: string } | null;
+      if (saved?.day === today && saved.countedDay === today && saved.visitorId) return;
+      const visitorId = saved?.day === today && saved.visitorId ? saved.visitorId : typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+            const random = Math.random() * 16 | 0;
+            return (char === "x" ? random : (random & 0x3 | 0x8)).toString(16);
+          });
+      void fetch(`${API_URL}/analytics/visit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitorId }),
+        keepalive: true,
+      }).then((response) => {
+        if (response.ok) localStorage.setItem(key, JSON.stringify({ day: today, visitorId, countedDay: today }));
+      }).catch(() => undefined);
+    } catch { /* Analytics are optional and must not interrupt the website. */ }
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -80,6 +103,19 @@ function App() {
     const timer = window.setInterval(() => { void verifySession(); }, 60_000);
     return () => { active = false; window.clearInterval(timer); };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user || route.name === "admin") return;
+    const credential = sessionStorage.getItem("janpratinidhi-google-token");
+    if (!credential) return;
+    const page = route.name;
+    void fetch(`${API_URL}/activity/page-view`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${credential}` },
+      body: JSON.stringify({ page }),
+      keepalive: true,
+    }).catch(() => undefined);
+  }, [user?.id, route.name, route.name === "representative" ? route.identifier : ""]);
 
   const signIn = async () => {
     if (!GOOGLE_CLIENT_ID) { setNotice("Google sign-in needs VITE_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_ID configuration."); return; }

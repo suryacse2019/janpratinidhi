@@ -115,6 +115,8 @@ This project aims to make civic information easier to explore, not to replace of
 
 The code license does not grant rights to third-party datasets, photographs, party symbols, or other media. Check the terms and attribution requirements for every external source and contributed asset before publishing it. Avoid collecting or publishing private personal information.
 
+The website records an approximate daily unique-visitor count using a random first-party browser identifier that rotates each UTC day. The API stores only a hash of that daily identifier and the date; it does not store visitor IP addresses or names for this metric. Counts are approximate: clearing browser storage, using another browser/device, or blocking analytics can affect the total. Visit records expire after 90 days. For signed-in users, the admin panel also records account activity such as sign-ins, page views, directory searches (without search text), and saved-representative changes. Page names appear once per account, with repeat visits updating the last-visited time. Activity records are visible only to admins and expire after 90 days; keystrokes and arbitrary clicks are not recorded.
+
 ## Contributing
 
 Contributions are welcome, including code, documentation, accessibility improvements, and carefully sourced corrections.

@@ -4,6 +4,7 @@ import { RepresentativeModel } from "../models/Representative.js";
 import { PartyModel } from "../models/Party.js";
 import { UserModel } from "../models/User.js";
 import { withPartyCatalog } from "../services/partyCatalog.js";
+import { recordUserActivity } from "../services/activityLog.js";
 
 export const representativesRouter = Router();
 
@@ -35,6 +36,7 @@ representativesRouter.put("/my-representatives/:position", requireUser, async (r
       .populate({ path: "savedRepresentatives.mp", match: { status: "published", sample: { $ne: true } } })
       .populate({ path: "savedRepresentatives.mla", match: { status: "published", sample: { $ne: true } } });
     if (!user) return res.status(404).json({ error: "User account not found" });
+    await recordUserActivity(String(user._id), "Saved representative", `${position.toUpperCase()}: ${person.name}`);
     res.json({ success: true });
   } catch (error) { next(error); }
 });
@@ -45,6 +47,7 @@ representativesRouter.delete("/my-representatives/:position", requireUser, async
     if (position !== "mp" && position !== "mla") return res.status(400).json({ error: "Position must be mp or mla" });
     const user = await UserModel.findByIdAndUpdate(res.locals.authenticatedUserId, { $unset: { [`savedRepresentatives.${position}`]: 1 } });
     if (!user) return res.status(404).json({ error: "User account not found" });
+    await recordUserActivity(String(user._id), "Removed saved representative", position.toUpperCase());
     res.json({ success: true });
   } catch (error) { next(error); }
 });
@@ -439,6 +442,8 @@ representativesRouter.get("/search", requireUser, async (req, res, next) => {
     else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] };
     addTextSearch(filter, q);
     const { data, total } = await findPartyGroupedPage(filter, page, limit);
+    const filterDetails = [type !== "ALL" ? type : "", state, party].filter(Boolean).join(" · ");
+    await recordUserActivity(res.locals.authenticatedUserId, "Searched representatives", filterDetails || "All representatives");
     res.json({ data: await withPartyCatalog(data), pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) { next(error); }
 });
