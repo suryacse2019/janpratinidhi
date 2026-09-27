@@ -8,10 +8,12 @@ export function SiteHeader({
   children,
   politician = false,
   map = false,
+  isSignedIn = false,
 }: {
   children?: ReactNode;
   politician?: boolean;
   map?: boolean;
+  isSignedIn?: boolean;
 }) {
   const [mobileNav, setMobileNav] = useState(false);
   const [activeSection, setActiveSection] = useState(window.location.hash || "#home");
@@ -100,21 +102,23 @@ export function SiteHeader({
             href: "https://github.com/suryacse2019/janpratinidhi/issues/new",
             external: true,
           },
-        ].map(({ label, href, external }) => (
-          <a
-            key={href}
-            href={href}
-            target={external ? "_blank" : undefined}
-            rel={external ? "noopener noreferrer" : undefined}
-            className={activeHref === href ? "active" : undefined}
-            aria-current={
-              activeHref === href ? (politician || map ? "page" : "location") : undefined
-            }
-            onClick={() => setMobileNav(false)}
-          >
-            {t(label)}
-          </a>
-        ))}
+        ]
+          .filter(({ href }) => href !== "/search-map" || isSignedIn)
+          .map(({ label, href, external }) => (
+            <a
+              key={href}
+              href={href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              className={activeHref === href ? "active" : undefined}
+              aria-current={
+                activeHref === href ? (politician || map ? "page" : "location") : undefined
+              }
+              onClick={() => setMobileNav(false)}
+            >
+              {t(label)}
+            </a>
+          ))}
       </nav>
       <LanguageSwitcher />
       {children}

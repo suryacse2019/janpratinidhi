@@ -40,6 +40,7 @@ type SearchResponse = {
 };
 export function PublicPoliticianPage({
   theme,
+  isSignedIn = false,
   onToggleTheme,
   apiUrl,
   normalizeRepresentative,
@@ -48,6 +49,7 @@ export function PublicPoliticianPage({
 }: {
   mapMode?: boolean;
   theme: "light" | "dark";
+  isSignedIn?: boolean;
   onToggleTheme: () => void;
   apiUrl: string;
   normalizeRepresentative: (record: Record<string, unknown>) => Profile;
@@ -147,7 +149,7 @@ export function PublicPoliticianPage({
 
   return (
     <div className="dashboard-shell public-politician-shell">
-      <SiteHeader politician={!mapMode} map={mapMode}>
+      <SiteHeader isSignedIn={isSignedIn} politician={!mapMode} map={mapMode}>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </SiteHeader>
       <main className="dashboard-main">

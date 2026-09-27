@@ -488,6 +488,7 @@ function App() {
   if (route.name === "directory" || route.name === "map")
     return (
       <PublicPoliticianPage
+        isSignedIn={Boolean(user)}
         key={route.name}
         mapMode={route.name === "map"}
         theme={theme}
@@ -500,6 +501,7 @@ function App() {
   if (route.name === "representative")
     return (
       <RepresentativeDetailsPage
+        isSignedIn={Boolean(user)}
         identifier={route.identifier}
         theme={theme}
         onToggleTheme={toggleTheme}

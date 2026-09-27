@@ -75,8 +75,7 @@ export function HomePage({
 }) {
   return (
     <div className="site-shell">
-      <SiteHeader>
-       
+      <SiteHeader isSignedIn={Boolean(user)}>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
         {user ? (
           <ProfileMenu user={user} onSignOut={signOut} />
@@ -121,13 +120,15 @@ export function HomePage({
                 <Github size={16} /> GitHub
               </a>
             </div>
-            <a
-              href="/search-map"
-              className="text-button"
-              style={{ marginTop: 18, display: "inline-flex" }}
-            >
-              {t("Explore the India map")} <ArrowRight size={16} />
-            </a>
+            {user && (
+              <a
+                href="/search-map"
+                className="text-button"
+                style={{ marginTop: 18, display: "inline-flex" }}
+              >
+                {t("Explore the India map")} <ArrowRight size={16} />
+              </a>
+            )}
             <div className="hero-proof">
               <div className="proof-avatars">
                 <span>IN</span>

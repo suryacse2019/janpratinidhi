@@ -524,12 +524,14 @@ function formatRelativeUpdate(value: string, now: number): string {
 export function RepresentativeDetailsPage({
   identifier,
   theme,
+  isSignedIn = false,
   onToggleTheme,
   apiUrl,
   normalizeRepresentative,
 }: {
   identifier: string;
   theme: "light" | "dark";
+  isSignedIn?: boolean;
   onToggleTheme: () => void;
   apiUrl: string;
   normalizeRepresentative: (record: Record<string, unknown>) => Profile;
@@ -788,7 +790,7 @@ export function RepresentativeDetailsPage({
 
   return (
     <div className="dashboard-shell profile-route-shell">
-      <SiteHeader politician>
+      <SiteHeader isSignedIn={isSignedIn} politician>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </SiteHeader>
       <main className="representative-detail-main">
