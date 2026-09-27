@@ -40,6 +40,7 @@ const representativeSchema = new Schema(
       index: true,
     },
     state: { type: String, required: true, index: true },
+    district: { type: String, index: true },
     constituency: { type: String, index: true },
     photoUrl: String,
     partySymbolUrl: String,

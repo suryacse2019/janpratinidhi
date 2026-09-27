@@ -1,4 +1,5 @@
 import React from "react";
+import { SiteHeader } from "../../components/SiteHeader";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -9,7 +10,6 @@ import {
   FileText,
   Github,
   Landmark,
-  Menu,
   Search,
   ShieldCheck,
   Sparkles,
@@ -33,8 +33,6 @@ export function HomePage({
   profileTotal,
   theme,
   toggleTheme,
-  mobileNav,
-  setMobileNav,
   user,
   signOut,
   signIn,
@@ -54,8 +52,6 @@ export function HomePage({
   profileTotal: number;
   theme: "light" | "dark";
   toggleTheme: () => void;
-  mobileNav: boolean;
-  setMobileNav: (value: boolean) => void;
   user: User | null;
   signOut: () => void;
   signIn: () => void;
@@ -78,30 +74,7 @@ export function HomePage({
 }) {
   return (
     <div className="site-shell">
-      <header className="header">
-        <a className="brand" href="#home" aria-label="Janpratinidhi home">
-          <span className="brand-mark">
-            <Landmark size={20} strokeWidth={2.2} />
-          </span>
-          <span className="brand-name">
-            Jan Pratinidhi<span>.</span>
-          </span>
-        </a>
-        <button
-          className="mobile-menu icon-button"
-          onClick={() => setMobileNav(!mobileNav)}
-          aria-label="Toggle navigation"
-        >
-          {mobileNav ? <X /> : <Menu />}
-        </button>
-        <nav className={mobileNav ? "nav-links open" : "nav-links"}>
-          <a className="active" href="/politician">
-            Explore Politician
-          </a>
-          <a href="#how">How it works</a>
-          <a href="#about">About the project</a>
-        </nav>
-        {/* <a className="login-button admin-header-button" href="/admin/dashboard">Admin <Landmark size={14} /></a> */}
+      <SiteHeader>
         {user && (
           <a className="login-button dashboard-header-button" href="/dashboard">
             Dashboard <ArrowRight size={14} />
@@ -115,7 +88,7 @@ export function HomePage({
             {authBusy ? "Signing in…" : "Sign In"} <ArrowRight size={15} />
           </button>
         )}
-      </header>
+      </SiteHeader>
 
       <main>
         <section className="hero" id="home">

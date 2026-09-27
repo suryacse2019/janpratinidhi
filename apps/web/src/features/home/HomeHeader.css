@@ -1,0 +1,147 @@
+.header.home-header {
+  height: 88px;
+  padding: 0 5%;
+  gap: 16px;
+}
+.home-header .brand {
+  min-width: 0;
+  flex-shrink: 0;
+}
+.home-header .brand-mark {
+  background: #c01824;
+}
+.home-header .nav-links {
+  position: static;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  white-space: nowrap;
+}
+.home-header .nav-links a {
+  height: 42px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 7px;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+.home-header .nav-links a::after {
+  display: none;
+}
+.home-header .nav-links a:hover,
+.home-header .nav-links a.active {
+  background: #eeeae3;
+  color: #171717;
+}
+.home-header :is(a, button):focus-visible {
+  outline: 3px solid #c01824;
+  outline-offset: 4px;
+}
+.home-header > .login-button {
+  flex-shrink: 0;
+  margin: 0;
+}
+.home-header > .theme-toggle {
+  flex-shrink: 0;
+  margin: 0;
+}
+.home-header .mobile-menu {
+  display: none;
+}
+#home,
+#about,
+#contribute {
+  scroll-margin-top: 24px;
+}
+html[data-theme="dark"] .home-header .nav-links a:hover,
+html[data-theme="dark"] .home-header .nav-links a.active {
+  background: #303832;
+  color: #fff;
+}
+@media (max-width: 1150px) {
+  .header.home-header {
+    height: 76px;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  .home-header .mobile-menu {
+    display: grid;
+    place-items: center;
+    margin-left: auto;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+  }
+  .home-header .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 24px;
+    right: 24px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #f9f8f4;
+    box-shadow: 0 16px 40px #17171718;
+  }
+  .home-header .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .home-header .nav-links a {
+    height: 48px;
+    font-size: 14px;
+  }
+  html[data-theme="dark"] .home-header .nav-links {
+    background: #1c211e;
+    border-color: #353b37;
+  }
+}
+@media (max-width: 600px) {
+  .header.home-header {
+    height: auto;
+    min-height: 72px;
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .home-header .brand {
+    margin-right: auto;
+  }
+  .home-header .brand-name {
+    font-size: 17px;
+  }
+  .home-header .mobile-menu {
+    margin-left: 0;
+  }
+  .home-header .nav-links {
+    left: 12px;
+    right: 12px;
+  }
+  .home-header > .dashboard-header-button {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .home-header .nav-links a {
+    transition: none;
+  }
+}

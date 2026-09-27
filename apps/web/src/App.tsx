@@ -95,7 +95,6 @@ function App() {
   const [selected, setSelected] = useState<Profile | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
-  const [mobileNav, setMobileNav] = useState(false);
 
   useEffect(() => {
     try {
@@ -516,8 +515,6 @@ function App() {
       profileTotal={profileTotal}
       theme={theme}
       toggleTheme={toggleTheme}
-      mobileNav={mobileNav}
-      setMobileNav={setMobileNav}
       user={user}
       signOut={signOut}
       signIn={signIn}

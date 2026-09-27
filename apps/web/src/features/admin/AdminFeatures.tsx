@@ -1,5 +1,21 @@
 import React, { useState } from "react";
-import { ArrowRight, Clock3, Landmark, Search, X } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  ChartNoAxesCombined,
+  CheckCheck,
+  ChevronRight,
+  Clock3,
+  FilePenLine,
+  Landmark,
+  LayoutDashboard,
+  LogOut,
+  Search,
+  ShieldCheck,
+  Users,
+  X,
+} from "lucide-react";
+import "./AdminPanel.css";
 import type { Representative } from "@janpratinidhi/shared";
 import type { AdminActivity } from "../../shared/types";
 
@@ -327,14 +343,22 @@ export function AdminPanel({
   };
 
   return (
-    <section className="admin-panel" id="admin-panel">
+    <section className="admin-panel admin-workspace" id="admin-panel">
       <div className="admin-panel-heading">
         <div>
           <div className="eyebrow small-eyebrow">
             ADMINISTRATION <span className="heading-rule" />
           </div>
           <h2>
-            Website dashboard<span>.</span>
+            {
+              {
+                overview: "Dashboard overview",
+                representatives: "Representative records",
+                users: "Registered users",
+                activity: "User activity",
+              }[view]
+            }
+            <span>.</span>
           </h2>
           <p>Manage representative records and review registered Google accounts.</p>
         </div>
@@ -343,32 +367,57 @@ export function AdminPanel({
             Close admin
           </button>
           <button className="modal-done" onClick={onSignOut}>
-            Sign out admin
+            <LogOut size={15} aria-hidden="true" /> Sign out
           </button>
         </div>
       </div>
       <div className="admin-layout">
         <nav className="admin-sidebar" aria-label="Admin sections">
+          <div className="admin-sidebar-brand">
+            <span>
+              <ShieldCheck size={22} />
+            </span>
+            <div>
+              <strong>Admin workspace</strong>
+              <small>Jan Pratinidhi</small>
+            </div>
+          </div>
+          <p className="admin-sidebar-label">WORKSPACE</p>
           {(
             [
-              ["overview", "Overview"],
-              ["representatives", "Representatives"],
-              ["users", "Signed-in users"],
-              ["activity", "User activity"],
+              ["overview", "Overview", LayoutDashboard],
+              ["representatives", "Representatives", Landmark],
+              ["users", "Signed-in users", Users],
+              ["activity", "User activity", Activity],
             ] as const
-          ).map(([key, label]) => (
+          ).map(([key, label, Icon]) => (
             <button
               key={key}
+              aria-current={view === key ? "page" : undefined}
+              data-section={key}
               className={view === key ? "admin-side-button active" : "admin-side-button"}
               onClick={() => {
                 setView(key);
                 setEditor(null);
               }}
             >
-              {label}
-              {key === "users" && <span>{stats.users}</span>}
+              <Icon size={18} aria-hidden="true" />
+              <strong>{label}</strong>
+              {key === "users" ? (
+                <span>{stats.users}</span>
+              ) : (
+                <ChevronRight size={14} className="admin-side-chevron" aria-hidden="true" />
+              )}
             </button>
           ))}
+          <div className="admin-sidebar-note">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <p>
+              Better records.
+              <br />
+              <strong>Better public information.</strong>
+            </p>
+          </div>
         </nav>
         <div className="admin-content">
           {loading ? (
@@ -379,15 +428,33 @@ export function AdminPanel({
                 <>
                   <div className="admin-stat-grid">
                     {[
-                      ["Registered users", stats.users],
-                      ["All representative records", stats.representatives],
-                      ["Published on website", stats.published],
-                      ["Drafts", stats.drafts],
-                      ["Unique visitors today", stats.todayVisitors],
-                    ].map(([label, value]) => (
-                      <article className="admin-stat-card" key={label}>
+                      { label: "Registered users", value: stats.users, icon: Users, tone: "blue" },
+                      {
+                        label: "Representative records",
+                        value: stats.representatives,
+                        icon: Landmark,
+                        tone: "violet",
+                      },
+                      {
+                        label: "Published records",
+                        value: stats.published,
+                        icon: CheckCheck,
+                        tone: "green",
+                      },
+                      { label: "Drafts", value: stats.drafts, icon: FilePenLine, tone: "amber" },
+                      {
+                        label: "Visitors today",
+                        value: stats.todayVisitors,
+                        icon: ChartNoAxesCombined,
+                        tone: "blue",
+                      },
+                    ].map(({ label, value, icon: Icon, tone }) => (
+                      <article className="admin-stat-card" data-tone={tone} key={label}>
+                        <span className="admin-metric-icon">
+                          <Icon size={19} aria-hidden="true" />
+                        </span>
                         <small>{label}</small>
-                        <b>{value}</b>
+                        <b>{value.toLocaleString("en-IN")}</b>
                       </article>
                     ))}
                   </div>

@@ -2891,6 +2891,64 @@ html[data-theme="dark"] .user-activity-close {
   color: #30312d;
   font-size: 14px;
 }
+.directory-party-picker {
+  position: relative;
+}
+.dashboard-filters .directory-party-search {
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid #e2dfd8;
+  border-radius: 5px;
+  background: #fff;
+  color: #30312d;
+  font-size: 14px;
+}
+.dashboard-filters .directory-party-search:focus {
+  outline: 0;
+  border-color: #b5121b;
+  box-shadow: 0 0 0 3px #b5121b18;
+}
+.directory-party-options {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid #e2dfd8;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 8px 24px #201b1420;
+}
+.directory-party-options button {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #30312d;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.directory-party-options button[data-active="true"],
+.directory-party-options button:hover,
+.directory-party-options button[aria-selected="true"] {
+  background: #f6eeee;
+  color: #8d111b;
+}
+.directory-party-empty {
+  display: block;
+  padding: 9px 10px;
+  color: #74766f;
+  font-size: 13px;
+}
 .results-heading {
   display: flex;
   align-items: flex-end;
@@ -3248,6 +3306,93 @@ html[data-theme="dark"] .user-activity-close {
 .detail-election-row > a {
   color: #b5121b;
 }
+.election-vote-chart {
+  display: grid;
+  gap: 16px;
+}
+.election-vote-row {
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #efede7;
+}
+.election-vote-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #333;
+  font-size: 13px;
+}
+.election-vote-heading span,
+.election-vote-row small {
+  color: #77796f;
+}
+.election-vote-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f0eeea;
+}
+.election-vote-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #9f1420;
+}
+.election-vote-row small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.election-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  color: #9f1420;
+  font-size: 12px;
+}
+.representative-timeline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.representative-timeline li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 0 19px;
+}
+.representative-timeline li > b {
+  color: #9f1420;
+  font-size: 14px;
+}
+.representative-timeline li > div {
+  position: relative;
+  padding: 0 0 0 15px;
+  border-left: 2px solid #e9d9d9;
+  color: #343630;
+}
+.representative-timeline li > div::before {
+  position: absolute;
+  top: 2px;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #9f1420;
+  content: "";
+}
+.representative-timeline li p {
+  margin: 4px 0;
+  color: #77796f;
+  font-size: 13px;
+}
+.representative-timeline li a {
+  color: #9f1420;
+  font-size: 12px;
+}
 .detail-source-link {
   display: flex;
   align-items: center;
@@ -3552,6 +3697,15 @@ html[data-theme="dark"] .detail-election-row p,
 html[data-theme="dark"] .detail-source-link b {
   color: #e1e3dc;
 }
+html[data-theme="dark"] .election-vote-heading,
+html[data-theme="dark"] .representative-timeline li > div {
+  color: #e1e3dc;
+}
+html[data-theme="dark"] .election-vote-heading span,
+html[data-theme="dark"] .election-vote-row small,
+html[data-theme="dark"] .representative-timeline li p {
+  color: #a7aaa2;
+}
 html[data-theme="dark"] .hero-sub,
 html[data-theme="dark"] .hero-proof,
 html[data-theme="dark"] .eyebrow,
@@ -3598,6 +3752,13 @@ html[data-theme="dark"] .detail-symbol {
   background: #292f2a;
   border-color: #414941;
   color: #e1e3dc;
+}
+html[data-theme="dark"] .election-vote-row,
+html[data-theme="dark"] .representative-timeline li > div {
+  border-color: #39413b;
+}
+html[data-theme="dark"] .election-vote-track {
+  background: #39413b;
 }
 html[data-theme="dark"] .representative-photo {
   background: #3a292b;

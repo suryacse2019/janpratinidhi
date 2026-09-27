@@ -44,7 +44,7 @@ export function ContributorSection() {
   }, []);
 
   return (
-    <section className="contributors-section" aria-labelledby="contributors-title">
+    <section id="contribute" className="contributors-section" aria-labelledby="contributors-title">
       <div className="contributors-heading">
         <span className="contributors-icon">
           <Github size={19} />

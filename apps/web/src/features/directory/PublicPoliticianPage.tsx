@@ -1,3 +1,4 @@
+import { SiteHeader } from "../../components/SiteHeader";
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Landmark, Moon, Search, ShieldCheck, Sun } from "lucide-react";
 import type { Representative } from "@janpratinidhi/shared";
@@ -130,22 +131,9 @@ export function PublicPoliticianPage({
 
   return (
     <div className="dashboard-shell public-politician-shell">
-      <header className="dashboard-topbar">
-        <a className="brand" href="/">
-          <span className="brand-mark">
-            <Landmark size={19} />
-          </span>
-          <span className="brand-name">
-            Jan Pratinidhi<span>.</span>
-          </span>
-        </a>
-        <div className="theme-header-actions">
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <a className="dashboard-back-link" href="/">
-            ← Home
-          </a>
-        </div>
-      </header>
+      <SiteHeader politician>
+        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+      </SiteHeader>
       <main className="dashboard-main">
         <div className="dashboard-breadcrumb">
           <a href="/">Home</a>
@@ -158,7 +146,7 @@ export function PublicPoliticianPage({
               PUBLIC DIRECTORY <span className="heading-rule" />
             </div>
             <h1>Explore politicians</h1>
-            <p>Search MPs and MLAs by name, constituency, state, or party.</p>
+            <p>Search MPs, MLAs, and MLCs by name, state, district, constituency, or party.</p>
           </div>
           <span className="dashboard-total">{total.toLocaleString("en-IN")} records</span>
         </div>

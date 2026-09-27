@@ -857,6 +857,7 @@ const addTextSearch = (filter: Record<string, unknown>, value: string) => {
     { name: pattern },
     { party: pattern },
     { state: pattern },
+    { district: pattern },
     { constituency: pattern },
   ];
 };
@@ -893,16 +894,17 @@ representativesRouter.get("/", async (req, res, next) => {
       return res
         .status(400)
         .json({ error: "page must be positive and limit must be between 1 and 50" });
-    if (!["ALL", "MP", "MLA"].includes(type))
-      return res.status(400).json({ error: "type must be ALL, MP, or MLA" });
+    if (!["ALL", "MP", "MLA", "MLC"].includes(type))
+      return res.status(400).json({ error: "type must be ALL, MP, MLA, or MLC" });
     if (state.length > 100 || party.length > 100)
       return res.status(400).json({ error: "Filter values are too long" });
     const filter: Record<string, unknown> = { status: "published", sample: { $ne: true } };
     if (state) filter.state = state;
-    if (party) filter.party = party;
+    if (party) filter.party = { $regex: `^${escapeRegex(party.trim())}$`, $options: "i" };
     if (type === "MP") filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP"] };
     else if (type === "MLA") filter.office = "MLA";
-    else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] };
+    else if (type === "MLC") filter.office = "MLC";
+    else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA", "MLC"] };
     addTextSearch(filter, q);
     const { data, total } = await findPartyGroupedPage(filter, page, limit);
     res.json({
@@ -919,7 +921,7 @@ representativesRouter.get("/directory-filters", async (_req, res, next) => {
     const filter = {
       status: "published",
       sample: { $ne: true },
-      office: { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] },
+      office: { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA", "MLC"] },
     };
     const [states, parties] = await Promise.all([
       RepresentativeModel.distinct("state", filter),
@@ -956,8 +958,8 @@ representativesRouter.get("/search", requireUser, async (req, res, next) => {
     const type = typeof req.query.type === "string" ? req.query.type.toUpperCase() : "ALL";
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 10);
-    if (!["ALL", "MP", "MLA"].includes(type))
-      return res.status(400).json({ error: "type must be ALL, MP, or MLA" });
+    if (!["ALL", "MP", "MLA", "MLC"].includes(type))
+      return res.status(400).json({ error: "type must be ALL, MP, MLA, or MLC" });
     if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50)
       return res
         .status(400)
@@ -966,10 +968,11 @@ representativesRouter.get("/search", requireUser, async (req, res, next) => {
       return res.status(400).json({ error: "Filter values are too long" });
     const filter: Record<string, unknown> = { status: "published", sample: { $ne: true } };
     if (state) filter.state = state;
-    if (party) filter.party = party;
+    if (party) filter.party = { $regex: `^${escapeRegex(party.trim())}$`, $options: "i" };
     if (type === "MP") filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP"] };
     else if (type === "MLA") filter.office = "MLA";
-    else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA"] };
+    else if (type === "MLC") filter.office = "MLC";
+    else filter.office = { $in: ["Lok Sabha MP", "Rajya Sabha MP", "MLA", "MLC"] };
     addTextSearch(filter, q);
     const { data, total } = await findPartyGroupedPage(filter, page, limit);
     const filterDetails = [type !== "ALL" ? type : "", state, party].filter(Boolean).join(" · ");
