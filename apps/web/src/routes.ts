@@ -11,6 +11,7 @@ export function resolveRoute(pathname: string): AppRoute {
   if (pathname === "/dashboard") return { name: "dashboard" };
   if (pathname === "/politician" || pathname === "/politician/") return { name: "directory" };
   const representative = pathname.match(/^\/representatives\/([^/]+)\/?$/);
-  if (representative) return { name: "representative", identifier: decodeURIComponent(representative[1]) };
+  if (representative)
+    return { name: "representative", identifier: decodeURIComponent(representative[1]) };
   return { name: "home" };
 }

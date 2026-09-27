@@ -7,7 +7,14 @@ export function normalizeRepresentative(record: Record<string, unknown>): Repres
     ...record,
     id: String(record._id ?? record.id ?? ""),
     name,
-    initials: String(record.initials ?? name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2)),
+    initials: String(
+      record.initials ??
+        name
+          .split(/\s+/)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 2),
+    ),
     party,
     partyShort: String(record.partyShort ?? ""),
     office: record.office as Representative["office"],

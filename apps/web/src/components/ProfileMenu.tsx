@@ -11,7 +11,9 @@ export function ProfileMenu({ user, onSignOut }: { user: User; onSignOut: () => 
     const closeOnOutsideClick = (event: MouseEvent) => {
       if (event.target instanceof Node && !menuRef.current?.contains(event.target)) setOpen(false);
     };
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", closeOnOutsideClick);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
@@ -20,16 +22,43 @@ export function ProfileMenu({ user, onSignOut }: { user: User; onSignOut: () => 
     };
   }, []);
 
-  return <div className="profile-menu" ref={menuRef}>
-    <button className="profile-menu-trigger" type="button" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((value) => !value)}>
-      {user.picture ? <img src={user.picture} alt="" /> : <span className="profile-menu-initial">{user.name.trim().charAt(0).toUpperCase()}</span>}
-      <span className="profile-menu-name">{user.name.split(" ")[0]}</span><ChevronDown size={15} />
-    </button>
-    {open && <div className="profile-menu-popover" role="menu">
-      <div className="profile-menu-account"><b>{user.name}</b><small>{user.email}</small></div>
-      <a href="/dashboard" role="menuitem" onClick={() => setOpen(false)}><LayoutDashboard size={15} />Dashboard</a>
-      <a href="/politician" role="menuitem" onClick={() => setOpen(false)}><Users size={15} />Politicians</a>
-      <button type="button" role="menuitem" onClick={onSignOut}><LogOut size={15} />Log out</button>
-    </div>}
-  </div>;
+  return (
+    <div className="profile-menu" ref={menuRef}>
+      <button
+        className="profile-menu-trigger"
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((value) => !value)}
+      >
+        {user.picture ? (
+          <img src={user.picture} alt="" />
+        ) : (
+          <span className="profile-menu-initial">{user.name.trim().charAt(0).toUpperCase()}</span>
+        )}
+        <span className="profile-menu-name">{user.name.split(" ")[0]}</span>
+        <ChevronDown size={15} />
+      </button>
+      {open && (
+        <div className="profile-menu-popover" role="menu">
+          <div className="profile-menu-account">
+            <b>{user.name}</b>
+            <small>{user.email}</small>
+          </div>
+          <a href="/dashboard" role="menuitem" onClick={() => setOpen(false)}>
+            <LayoutDashboard size={15} />
+            Dashboard
+          </a>
+          <a href="/politician" role="menuitem" onClick={() => setOpen(false)}>
+            <Users size={15} />
+            Politicians
+          </a>
+          <button type="button" role="menuitem" onClick={onSignOut}>
+            <LogOut size={15} />
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

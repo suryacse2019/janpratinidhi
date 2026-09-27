@@ -1,6 +1,10 @@
 import { ActivityEventModel } from "../models/ActivityEvent.js";
 
-export async function recordUserActivity(userId: string, action: string, details = ""): Promise<void> {
+export async function recordUserActivity(
+  userId: string,
+  action: string,
+  details = "",
+): Promise<void> {
   try {
     const cleanDetails = details.slice(0, 240);
     const lastSeenAt = new Date();
@@ -9,11 +13,15 @@ export async function recordUserActivity(userId: string, action: string, details
       try {
         await ActivityEventModel.updateOne(
           { pageKey },
-          { $set: { lastSeenAt }, $setOnInsert: { userId, action, details: cleanDetails, pageKey } },
+          {
+            $set: { lastSeenAt },
+            $setOnInsert: { userId, action, details: cleanDetails, pageKey },
+          },
           { upsert: true },
         );
       } catch (error) {
-        if (!(error && typeof error === "object" && "code" in error && error.code === 11000)) throw error;
+        if (!(error && typeof error === "object" && "code" in error && error.code === 11000))
+          throw error;
         await ActivityEventModel.updateOne({ pageKey }, { $set: { lastSeenAt } });
       }
       return;

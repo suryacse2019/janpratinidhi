@@ -6,4 +6,8 @@ import { fileURLToPath } from "node:url";
 // values to browser code, so API-only secrets remain private.
 const apiEnvDirectory = fileURLToPath(new URL("../api", import.meta.url));
 
-export default defineConfig({ envDir: apiEnvDirectory, plugins: [react()], server: { port: 5173 } });
+export default defineConfig({
+  envDir: apiEnvDirectory,
+  plugins: [react()],
+  server: { port: 5173 },
+});
