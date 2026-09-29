@@ -145,12 +145,7 @@ export function HomePage({
           <div className="hero-art" aria-label={t("Illustration of the Indian Parliament")}>
             <div className="art-orbit orbit-one" />
             <div className="art-orbit orbit-two" />
-            <div className="art-caption">
-              <span className="caption-line" />
-              {" " + t("PEOPLE'S HOUSE") + " "}
-              <span>·</span>
-              {" " + t("NEW DELHI")}
-            </div>
+             
             <div className="parliament-card">
               <div className="building-sun" />
               <div className="building-ground" />
@@ -174,28 +169,9 @@ export function HomePage({
               <span className="flag flag-one" />
               <span className="flag flag-two" />
             </div>
-            <div className="floating-note note-source">
-              <span className="note-icon">
-                <FileText size={15} />
-              </span>
-              <span>
-                <b>{t("Every fact has a source")}</b>
-                <small>{t("Read the original record ↗")}</small>
-              </span>
-            </div>
-            <div className="floating-note note-record">
-              <span className="note-check">
-                <Check size={15} />
-              </span>
-              <span>
-                <b>{t("Verified public records")}</b>
-                <small>{t("With dates and context")}</small>
-              </span>
-            </div>
-            <div className="art-footnote">
-              {t("A public resource, shaped by the public") + " "}
-              <span>✳</span>
-            </div>
+             
+            
+            
           </div>
         </section>
 

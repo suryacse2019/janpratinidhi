@@ -754,31 +754,8 @@ export function RepresentativeDetailsPage({
         ]
       : []),
   ];
-  const electionHistory = [...(person?.elections ?? [])].sort((a, b) => a.year - b.year);
-  const highestElectionVoteCount = Math.max(
-    1,
-    ...electionHistory.map((election) => election.votes),
-  );
-  const timelineItems = [
-    ...electionHistory.map((election) => ({
-      year: election.year,
-      title: `${election.electionType} · ${election.result}`,
-      detail: `${election.constituency}, ${election.state} · ${election.party}`,
-      source: election.source,
-    })),
-    ...(externalProfile?.sansadHistory ?? []).map((item) => ({
-      year: Number((item.start ?? item.end ?? "").slice(0, 4)) || 0,
-      title: item.position,
-      detail: [item.start, item.end].filter(Boolean).join(" – "),
-      source: undefined,
-    })),
-  ]
-    .filter((item) => item.year > 0)
-    .sort((a, b) => a.year - b.year);
   const detailTabs = [
     { id: "detail-biography", label: "Biography" },
-    { id: "detail-election-history", label: "Election history" },
-    { id: "detail-timeline", label: "Timeline" },
     { id: "detail-performance", label: "Performance" },
     { id: "detail-history", label: "History" },
     { id: "detail-education", label: "Education" },
@@ -919,101 +896,6 @@ export function RepresentativeDetailsPage({
               ))}
             </nav>
             <div className="representative-detail-sections">
-              <section
-                id="detail-election-history"
-                className="representative-detail-card representative-detail-anchor"
-              >
-                <h2>{t("Election history")}</h2>
-                {electionHistory.length ? (
-                  <>
-                    <p className="external-sources-note">
-                      {t(
-                        "Recorded votes by election. Each bar uses the same vote-count scale; vote share and turnout are shown only when a verified denominator is available.",
-                      )}
-                    </p>
-                    <div
-                      className="election-vote-chart"
-                      aria-label={t("Votes received in recorded elections")}
-                    >
-                      {electionHistory.map((election) => (
-                        <div
-                          className="election-vote-row"
-                          key={`${election.year}-${election.electionType}-${election.constituency}`}
-                        >
-                          <div className="election-vote-heading">
-                            <b>
-                              {election.year} · {election.electionType}
-                            </b>
-                            <span>
-                              {election.votes.toLocaleString(locale())}
-                              {" " + t("votes")}
-                            </span>
-                          </div>
-                          <div className="election-vote-track" aria-hidden="true">
-                            <span
-                              style={{
-                                width: `${Math.max(2, (election.votes / highestElectionVoteCount) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <small>
-                            {election.result} · {election.party} · {election.constituency},{" "}
-                            {election.state}
-                            {typeof election.margin === "number"
-                              ? ` · margin ${election.margin.toLocaleString(locale())}`
-                              : ""}
-                          </small>
-                          {election.source?.url && (
-                            <a
-                              href={election.source.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="election-source-link"
-                            >
-                              {t("Source:") + " "}
-                              {election.source.publisher || election.source.title}{" "}
-                              <ExternalLink size={12} />
-                            </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="info-unavailable">
-                    <p>{t("No verified election results are recorded for this profile yet.")}</p>
-                  </div>
-                )}
-              </section>
-              <section
-                id="detail-timeline"
-                className="representative-detail-card representative-detail-anchor"
-              >
-                <h2>{t("Timeline")}</h2>
-                {timelineItems.length ? (
-                  <ol className="representative-timeline">
-                    {timelineItems.map((item, index) => (
-                      <li key={`${item.year}-${item.title}-${index}`}>
-                        <b>{item.year}</b>
-                        <div>
-                          <strong>{item.title}</strong>
-                          {item.detail && <p>{item.detail}</p>}
-                          {item.source?.url && (
-                            <a href={item.source.url} target="_blank" rel="noreferrer">
-                              {t("Source:") + " "}
-                              {item.source.publisher || item.source.title}
-                            </a>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <div className="info-unavailable">
-                    <p>{t("No dated election or parliamentary milestones are available.")}</p>
-                  </div>
-                )}
-              </section>
               <div id="detail-biography" className="representative-detail-anchor">
                 <RepresentativeInfoSection
                   title={t("External biography")}
